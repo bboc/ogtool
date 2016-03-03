@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import os
-import sys
 import argparse
 import logging
+import os
+import shutil
+import sys
 import tempfile
 
 import appscript
@@ -22,12 +23,21 @@ EXPORT_FORMATS = {
 
 SANDBOXED_DIR_6 = '~/Library/Containers/com.omnigroup.OmniGraffle6/Data/'
 
-def export(args):
 
+def export(args):
 
     og = appscript.app('OmniGraffle')
     og.activate()
+
+
     doc = og.open(os.path.abspath(args.source))
+
+    if not doc:
+        # fix for inaccessible files
+        import subprocess
+        subprocess.call(['open',os.path.abspath(args.source)])
+        doc = og.open(os.path.abspath(args.source))
+
     target = os.path.abspath(args.target)
 
     # TODO: test all those!!!
@@ -40,8 +50,6 @@ def export(args):
     if args.scale:
         og.current_export_settings.export_scale.set(args.border)
 
-
-
     if args.canvas:
         # TODO test and fix
         og.current_export_settings.area_type.set(appscript.k.current_canvas)
@@ -51,24 +59,21 @@ def export(args):
 
         export_item(og, doc, target, args.format)
 
+    og.windows.first().close()
 
 def export_canvas(og, doc, target, args):
     # TODO: this is totally untested
     for canvas in doc.canvases():
-        print canvas.name()
         og.windows.first().canvas.set(canvas)
         og.current_export_settings.area_type.set(appscript.k.current_canvas)
         
-
         og.windows.first().canvas.set(canvas)
         format = 'eps'
         export_format = EXPORT_FORMATS[format]
 
-
         fname = '/Users/beb/dev/omnigraffle-export/omnigraffle_export/tmp/%s.%s' % (canvas.name(), format)
 
         export_item(og, fname, export_format)
-
 
 
 def export_item(og, doc, fname, export_format):
@@ -80,29 +85,35 @@ def export_item(og, doc, fname, export_format):
 
     export_path = fname
 
+    export_path_with_format = '%s.%s' % (export_path, export_format.lower())
     if sandboxed:
         export_path = os.path.expanduser(SANDBOXED_DIR_6) + os.path.basename(fname)
+
+        # when telling OmniGraffle to export to x, in some cases it exports to x.format -- weird
+        export_path_with_format = '%s.%s' % (export_path, export_format.lower())
+        # TODO: unlink in case of file when exporting  individual canvas
+        if os.path.exists(export_path):
+            shutil.rmtree(export_path)
+        if os.path.exists(export_path_with_format):
+            shutil.rmtree(export_path_with_format)
         logging.debug('OmniGraffle is sandboxed - exporting to: %s' % export_path)
-        print 'OmniGraffle is sandboxed - exporting to: %s' % export_path
 
 
     doc.save(as_=export_format, in_=export_path)
-
+    
     if sandboxed:
-        print export_path
-        print fname
-        try:
+        if os.path.exists(fname):
+            shutil.rmtree(fname)        
+        if os.path.exists(export_path):
             os.rename(export_path, fname)
-        except OSError:
-            os.rename('%s.%s' % (export_path, export_format.lower()), fname)    
+        else:
+            os.rename(export_path_with_format, fname)    
         logging.debug('OmniGraffle is sandboxed - moving %s to: %s' % (export_path, fname))
-
-
 
 
 def main():
 
-    parser = argparse.ArgumentParser(description='Export canvases from OmniGraffle6.')
+    parser = argparse.ArgumentParser(description='Export canvases from OmniGraffle6. If a file fails, simply try again.')
     
     # TODO test and add formats
     parser.add_argument('format', type=str,
@@ -132,10 +143,8 @@ def main():
 
     args = parser.parse_args()
 
-    print(args)
+    print 'exporting', args.source
     export(args)    
-
-
 
 
 if __name__ == '__main__':
