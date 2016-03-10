@@ -7,19 +7,23 @@ import shutil
 import sys
 import tempfile
 
+from textwrap import dedent
 import appscript
 
-EXPORT_FORMATS = {
-        "eps": "EPS",
-        "pdf": "PDF",
-        "png": "PNG",
-
-        # FIXME
-        # "svg": "SVG",
-        # "tiff" : "TIFF",
-        # "gif" : "GIF",
-        # "jpeg" : "JPEG",
-    }
+EXPORT_FORMATS = [
+    'bmp', 
+    'eps', 
+    'gif', 
+    # 'html' NOT WORKING (OSERROR -50 "The document cannot be exported to the "HTML text" format."
+    'jpg', 
+    'png', 
+    'pdf', 
+    'psd', # Photoshop
+    # 'svg' NOT WORKING (OSERROR -50 "The document cannot be exported to the "scalable vector graphics (SVG)" format.")
+    'tiff',
+    'vdx', # Visio XML
+]
+MULTIPAGE_FORMATS = ('pdf', 'vdx')
 
 SANDBOXED_DIR_6 = '~/Library/Containers/com.omnigroup.OmniGraffle6/Data/'
 
@@ -40,15 +44,14 @@ def export(args):
 
     target = os.path.abspath(args.target)
 
-    # TODO: test all those!!!
-    og.current_export_settings.draws_background.set(True)
-    if args.border:
-        og.current_export_settings.include_border.set(True)
-        og.current_export_settings.border_amount.set(args.border)
+    if args.transparent:
+        og.current_export_settings.draws_background.set(False)
+    else:
+        og.current_export_settings.draws_background.set(True)
     if args.resolution:
-        og.current_export_settings.resolution.set(args.border)
+        og.current_export_settings.resolution.set(args.resolution)
     if args.scale:
-        og.current_export_settings.export_scale.set(args.border)
+        og.current_export_settings.export_scale.set(args.scale)
 
     if args.canvas:
         # TODO test and fix
@@ -113,11 +116,17 @@ def export_item(og, doc, fname, export_format):
 
 def main():
 
-    parser = argparse.ArgumentParser(description='Export canvases from OmniGraffle6. If a file fails, simply try again.')
-    
-    # TODO test and add formats
+    parser = argparse.ArgumentParser(description="Export canvases from OmniGraffle 6.",
+                                     epilog= dedent("""
+        If a file fails, simply try again. 
+
+        Export uses current export settings stored in OmniGraffle for each filetype. 
+
+        WARNING: Commandline arguments for scale or resolution override AND CHANGE export settings in OmniGraffle!"""))
+
+    # TODO: add html image type: jpg, png, tiff
     parser.add_argument('format', type=str,
-                    help='Export format: EPS,...')
+                    help="Export formats: bmp, eps, gif, jpg, png, pdf, psd (Photoshop), tiff, vdx (Visio XML) (not supported: html, svg)")
     
     parser.add_argument('source', type=str,
                     help='an OmniGraffle file')
@@ -126,24 +135,27 @@ def main():
     # TODO: implement 
     parser.add_argument('--canvas', type=str,
                         help='export canvas with given name')
-    # TODO: implement
     parser.add_argument('--scale', type=float,
-                        help=' The scale to use during export')
-    # TODO: implement
+                        help=' The scale to use during export (1.0 is 100%%)')
     parser.add_argument('--resolution', type=float,
-                        help='The number of pixels per point in the resulting exported image (1.0 for 72 DPI).')
-
-    # TODO: implement
+                        help='The number of pixels per point in the resulting exported image (1.0 for 72 DPI)')
     parser.add_argument('--transparent', dest='transparent', action='store_true',
                         help='export with transparent background')
-
-    # TODO: implement
-    parser.add_argument('--border', type=int,
-                        help='The number of pixels of border area to include in exported graphics.')
 
     args = parser.parse_args()
 
     print 'exporting', args.source
+    print args
+
+    # make sure target filename for multipage formats contains extension
+    if args.format.lower() in MULTIPAGE_FORMATS:
+        if not args.target.endswith('.'+args.format.lower()):
+            args.target = '%s.%s' % (args.target, args.format.lower())
+
+    if args.format.lower() not in EXPORT_FORMATS:
+        print "ERROR: format '%s' not supported." % args.format
+        sys.exit(1)
+
     export(args)    
 
 
