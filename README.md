@@ -20,6 +20,45 @@ Or using the PIP:
 
     pip install omnigraffle_export
 
+
+og6-export
+==========
+
+Commandline tool for exporting OmniGraffle 6 files to (almost) all supported file formats (html and svg currently disabled). Supports export of one specific canvas, or all canvases in a file. 
+
+Scale, resolution and transparency can be set via optional parameters.
+
+Usage
+-----
+
+og6-export [-h] [--canvas CANVAS] [--scale SCALE]
+                [--resolution RESOLUTION] [--transparent]
+                format source target
+
+Export canvases from OmniGraffle 6.
+
+positional arguments:
+  format                Export formats: bmp, eps, gif, jpg, png, pdf, psd
+                        (Photoshop), tiff, vdx (Visio XML) (not supported:
+                        html, svg)
+  source                an OmniGraffle file
+  target                folder to export to
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --canvas CANVAS       export canvas with given name
+  --scale SCALE         The scale to use during export (1.0 is 100%)
+  --resolution RESOLUTION
+                        The number of pixels per point in the resulting
+                        exported image (1.0 for 72 DPI)
+  --transparent         export with transparent background
+
+
+
+
+omnigraffle-export
+==================
+
 Usage
 -----
 
