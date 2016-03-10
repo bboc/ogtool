@@ -14,12 +14,12 @@ EXPORT_FORMATS = [
     'bmp', 
     'eps', 
     'gif', 
-    # 'html' NOT WORKING (OSERROR -50 "The document cannot be exported to the "HTML text" format."
+    # 'html' TODO: NOT WORKING (OSERROR -50 "The document cannot be exported to the "HTML text" format."
     'jpg', 
     'png', 
     'pdf', 
     'psd', # Photoshop
-    # 'svg' NOT WORKING (OSERROR -50 "The document cannot be exported to the "scalable vector graphics (SVG)" format.")
+    # 'svg' TODO: NOT WORKING (OSERROR -50 "The document cannot be exported to the "scalable vector graphics (SVG)" format.")
     'tiff',
     'vdx', # Visio XML
 ]
@@ -44,6 +44,7 @@ def export(args):
 
     target = os.path.abspath(args.target)
 
+
     if args.transparent:
         og.current_export_settings.draws_background.set(False)
     else:
@@ -53,31 +54,48 @@ def export(args):
     if args.scale:
         og.current_export_settings.export_scale.set(args.scale)
 
+
+    #og.current_export_settings.border_amount.set(0)
+    #og.current_export_settings.include_border.set(False)
+
+    # display current export settings
+    if args.verbose:
+        print "current export settings:"
+        print "resolution", og.current_export_settings.resolution()
+        print "scale", og.current_export_settings.export_scale()
+        print "border amount", og.current_export_settings.border_amount()
+        print 'include border', og.current_export_settings.include_border()
+        print 'html image type', og.current_export_settings.html_image_type()
+        print 'draws background', og.current_export_settings.draws_background()
+        print 'origin', og.current_export_settings.origin()
+        print 'size', og.current_export_settings.size()
+
+
     if args.canvas:
-        # TODO test and fix
         og.current_export_settings.area_type.set(appscript.k.current_canvas)
-        export_canvas(og, args)
+        if args.verbose: print 'area type', og.current_export_settings.area_type()
+
+        export_canvas(og, doc, target, args.format, args.canvas)
     else:
         og.current_export_settings.area_type.set(appscript.k.entire_document)
+        if args.verbose: print 'area type', og.current_export_settings.area_type()
 
         export_item(og, doc, target, args.format)
 
     og.windows.first().close()
 
-def export_canvas(og, doc, target, args):
-    # TODO: this is totally untested
-    for canvas in doc.canvases():
-        og.windows.first().canvas.set(canvas)
-        og.current_export_settings.area_type.set(appscript.k.current_canvas)
-        
-        og.windows.first().canvas.set(canvas)
-        format = 'eps'
-        export_format = EXPORT_FORMATS[format]
-
-        fname = '/Users/beb/dev/omnigraffle-export/omnigraffle_export/tmp/%s.%s' % (canvas.name(), format)
-
-        export_item(og, fname, export_format)
-
+def export_canvas(og, doc, target, format, canvas):
+    canvas_names = []
+    for c in doc.canvases():
+        canvas_names.append(c.name())
+        if c.name() == canvas:
+            og.windows.first().canvas.set(c)
+            og.current_export_settings.area_type.set(appscript.k.current_canvas)
+            target = '%s.%s' % (os.path.join(target, canvas), format)
+            export_item(og, doc, target, format)
+            return
+    else:
+        print "ERROR: canvas '%s' not found in document. List of existing canvases: \n%s" % (canvas, '\n'.join(canvas_names))
 
 def export_item(og, doc, fname, export_format):
     """Export an item."""
@@ -88,25 +106,29 @@ def export_item(og, doc, fname, export_format):
 
     export_path = fname
 
-    export_path_with_format = '%s.%s' % (export_path, export_format.lower())
+    def clear(path):
+        if os.path.exists(path):
+            if os.path.isfile(path):
+                os.unlink(path)
+            else:
+                shutil.rmtree(path)
+
+    export_path_with_format = '%s.%s' % (export_path, export_format)
     if sandboxed:
         export_path = os.path.expanduser(SANDBOXED_DIR_6) + os.path.basename(fname)
 
         # when telling OmniGraffle to export to x, in some cases it exports to x.format -- weird
-        export_path_with_format = '%s.%s' % (export_path, export_format.lower())
-        # TODO: unlink in case of file when exporting  individual canvas
-        if os.path.exists(export_path):
-            shutil.rmtree(export_path)
-        if os.path.exists(export_path_with_format):
-            shutil.rmtree(export_path_with_format)
+        export_path_with_format = '%s.%s' % (export_path, export_format)
+        clear(export_path)
+        clear(export_path_with_format)
+
         logging.debug('OmniGraffle is sandboxed - exporting to: %s' % export_path)
 
 
     doc.save(as_=export_format, in_=export_path)
     
     if sandboxed:
-        if os.path.exists(fname):
-            shutil.rmtree(fname)        
+        clear(fname)
         if os.path.exists(export_path):
             os.rename(export_path, fname)
         else:
@@ -124,7 +146,8 @@ def main():
 
         WARNING: Commandline arguments for scale or resolution override AND CHANGE export settings in OmniGraffle!"""))
 
-    # TODO: add html image type: jpg, png, tiff
+    # TODO: add option for html image type: jpg, png, tiff
+    # TODO: add option for overriding file name when exporting a single canvase
     parser.add_argument('format', type=str,
                     help="Export formats: bmp, eps, gif, jpg, png, pdf, psd (Photoshop), tiff, vdx (Visio XML) (not supported: html, svg)")
     
@@ -132,7 +155,7 @@ def main():
                     help='an OmniGraffle file')
     parser.add_argument('target', type=str,
                     help='folder to export to')
-    # TODO: implement 
+
     parser.add_argument('--canvas', type=str,
                         help='export canvas with given name')
     parser.add_argument('--scale', type=float,
@@ -142,18 +165,20 @@ def main():
     parser.add_argument('--transparent', dest='transparent', action='store_true',
                         help='export with transparent background')
 
+    parser.add_argument('--verbose', '-v', action='count')
+
     args = parser.parse_args()
 
     print 'exporting', args.source
-    print args
 
+    args.format = args.format.lower()
     # make sure target filename for multipage formats contains extension
-    if args.format.lower() in MULTIPAGE_FORMATS:
-        if not args.target.endswith('.'+args.format.lower()):
-            args.target = '%s.%s' % (args.target, args.format.lower())
+    if args.format in MULTIPAGE_FORMATS:
+        if not args.target.endswith('.'+args.format):
+            args.target = '%s.%s' % (args.target, args.format)
 
-    if args.format.lower() not in EXPORT_FORMATS:
-        print "ERROR: format '%s' not supported." % args.format
+    if args.format not in EXPORT_FORMATS:
+        ArgumentParser.error("format '%s' not supported." % args.format)
         sys.exit(1)
 
     export(args)    
