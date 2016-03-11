@@ -10,6 +10,19 @@ import tempfile
 from textwrap import dedent
 import appscript
 
+"""
+Planned extensions:
+
+
+* add defaults for scale (1.0) and resolution (1.94444441795)
+* read defaults from config file (in current directory, or with commandline argument)
+* add option for html image type: jpg, png, tiff
+* add option for overriding file name when exporting a single canvas
+* find out why HTML and SVG export is not working
+* export all files in a folder
+
+"""
+
 
 class OmniGraffle6Exporter(object):
     """Exporter for OmniGraffle6"""
@@ -36,6 +49,17 @@ class OmniGraffle6Exporter(object):
             self.args = args
         else:
             self.args = self.parse_commandline()
+
+
+        self.args.format = self.args.format.lower()
+        # make sure target filename for multipage formats contains extension
+        if self.args.format in self.MULTIPAGE_FORMATS:
+            if not self.args.target.endswith('.' + self.args.format):
+                self.args.target = '%s.%s' % (self.args.target, self.args.format)
+
+        if self.args.format not in self.EXPORT_FORMATS:
+            ArgumentParser.error("format '%s' not supported." % self.args.format)
+            sys.exit(1)
 
         self.doc = None
         self.settings_backup = {}
@@ -122,7 +146,7 @@ class OmniGraffle6Exporter(object):
         if self.sandboxed():
             export_path = os.path.expanduser(
                 self.SANDBOXED_DIR_6) + os.path.basename(fname)
-            # TODO: when telling OmniGraffle to export to x, in some cases it exports to x.format
+            # FIXME: when telling OmniGraffle to export to x, in some cases it exports to x.format
             # (is this with just one canvas in a document??)
             export_path_with_format = '%s.%s' % (export_path, export_format)
             clear(export_path)
@@ -203,6 +227,11 @@ class OmniGraffle6Exporter(object):
     def parse_commandline(self):
         """Parse commandline, do some checks and return args."""
 
+        parser = self.get_parser()
+        return parser.parse_args()
+
+    @staticmethod
+    def get_parser():
         parser = argparse.ArgumentParser(description="Export canvases from OmniGraffle 6.",
                                          epilog=dedent("""
             If a file fails, simply try again. 
@@ -211,9 +240,6 @@ class OmniGraffle6Exporter(object):
 
             WARNING: Commandline arguments for scale or resolution override AND CHANGE export settings in OmniGraffle!"""))
 
-        # TODO: add option for html image type: jpg, png, tiff
-        # TODO: add option for overriding file name when exporting a single
-        # canvase
         parser.add_argument('format', type=str,
                             help="Export formats: bmp, eps, gif, jpg, png, pdf, psd (Photoshop), tiff, vdx (Visio XML) (not supported: html, svg)")
 
@@ -233,21 +259,7 @@ class OmniGraffle6Exporter(object):
 
         parser.add_argument('--verbose', '-v', action='count')
 
-        args = parser.parse_args()
-
-        print 'exporting', args.source
-
-        args.format = args.format.lower()
-        # make sure target filename for multipage formats contains extension
-        if args.format in self.MULTIPAGE_FORMATS:
-            if not args.target.endswith('.' + args.format):
-                args.target = '%s.%s' % (args.target, args.format)
-
-        if args.format not in self.EXPORT_FORMATS:
-            ArgumentParser.error("format '%s' not supported." % args.format)
-            sys.exit(1)
-
-        return args
+        return parser
 
 
 def main():

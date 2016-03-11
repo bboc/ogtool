@@ -54,6 +54,14 @@ optional arguments:
   --transparent         export with transparent background
 
 
+Developing og6-export
+---------------------
+
+
+Running the tests of og6-export requires Pillow
+
+  pip install pillow
+
 
 
 omnigraffle-export
