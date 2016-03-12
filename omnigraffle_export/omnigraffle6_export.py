@@ -34,7 +34,9 @@ File naming:
     * treat target as folder, create one file per canvas inside
 """
 
+
 class OmniGraffle6Exporter(object):
+
     """Exporter for OmniGraffle6"""
 
     SANDBOXED_DIR_6 = '~/Library/Containers/com.omnigroup.OmniGraffle6/Data/'
@@ -63,7 +65,8 @@ class OmniGraffle6Exporter(object):
         self.args.format = self.args.format.lower()
 
         if self.args.format not in self.EXPORT_FORMATS:
-            ArgumentParser.error("format '%s' not supported." % self.args.format)
+            ArgumentParser.error(
+                "format '%s' not supported." % self.args.format)
             sys.exit(1)
 
         self.doc = None
@@ -114,7 +117,8 @@ class OmniGraffle6Exporter(object):
         self.open_document()
         self.set_export_settings()
 
-        target = os.path.abspath(self.args.target) # removes trailing slash, if present!
+        # removes trailing slash, if present!
+        target = os.path.abspath(self.args.target)
 
         def _split_filename(fn, frmt):
             """Return (directory, filenname) if extension matches frmt, (directory, '') otherwise."""
@@ -125,24 +129,29 @@ class OmniGraffle6Exporter(object):
                 return os.path.split(fn)
 
         if self.args.format in self.MULTIPAGE_FORMATS:
-            # 1. Multipart Format: export to '<target> if filename, else to <target>/<source-filename>.<format>'
-            
+            # 1. Multipart Format: export to '<target> if filename, else to
+            # <target>/<source-filename>.<format>'
+
             directory, fname = _split_filename(target, self.args.format)
             if not fname:
 
                 dummy, fname = os.path.split(self.args.source)
-                fname = "%s.%s" % (os.path.splitext(fname)[0], self.args.format)
+                fname = "%s.%s" % (
+                    os.path.splitext(fname)[0], self.args.format)
             self.export_file(self.args.format, directory, fname)
 
         elif self.args.canvas:
-            # 2. Single Canvas: export to '<target> if filename, else to <target>/<canvas-name>.<format>'
+            # 2. Single Canvas: export to '<target> if filename, else to
+            # <target>/<canvas-name>.<format>'
             directory, fname = _split_filename(target, self.args.format)
             if not fname:
                 fname = "%s.%s" % (self.args.canvas, self.args.format)
-            self.export_canvas(self.args.format, directory, fname, self.args.canvas)
+            self.export_canvas(
+                self.args.format, directory, fname, self.args.canvas)
 
         elif len(self.doc.canvases()) == 1:
-            # 3. Only one canvas in file: xport to '<target>/<canvas-name>.<format>'
+            # 3. Only one canvas in file: xport to
+            # '<target>/<canvas-name>.<format>'
             c = self.doc.canvases()[0]
             canvas_name = c.name()
             fname = "%s.%s" % (canvas_name, self.args.format)
@@ -158,7 +167,8 @@ class OmniGraffle6Exporter(object):
 
     def export_canvas(self, export_format, directory, fname, canvas):
         """Export a single canvas."""
-        self.og.current_export_settings.area_type.set(appscript.k.current_canvas)
+        self.og.current_export_settings.area_type.set(
+            appscript.k.current_canvas)
         for c in self.doc.canvases():
             if c.name() == canvas:
                 self.og.windows.first().canvas.set(c)
@@ -171,7 +181,7 @@ class OmniGraffle6Exporter(object):
 
     @staticmethod
     def _clear(path):
-        return # TODO: this is too dangerous!
+        return  # TODO: this is too dangerous!
         """Remove file or directory."""
         if os.path.exists(path):
             if os.path.isfile(path):
@@ -182,17 +192,17 @@ class OmniGraffle6Exporter(object):
     def _og_export(self, export_format, export_path):
         self.doc.save(as_=export_format, in_=export_path)
 
-
     def export_file(self, export_format, directory, fname):
         """Export to a single file."""
-        export_path = os.path.join(directory, fname)  
+        export_path = os.path.join(directory, fname)
 
         # clear target if it exists
         self._clear(export_path)
 
         if self.sandboxed():
             # export to sandbox
-            export_path = os.path.join(os.path.expanduser(self.SANDBOXED_DIR_6), fname)
+            export_path = os.path.join(
+                os.path.expanduser(self.SANDBOXED_DIR_6), fname)
 
             # self._clear(export_path) TODO: is this even necessary
 
@@ -204,7 +214,6 @@ class OmniGraffle6Exporter(object):
                 os.makedirs(directory)
             os.rename(export_path, os.path.join(directory, fname))
 
-
     def export_dir(self, export_format, directory):
         """
         Export contents of a file to a directory. Sometimes OmniGraffle automatically adds 
@@ -214,14 +223,15 @@ class OmniGraffle6Exporter(object):
         """
 
         export_path = directory
-        
+
         # clear target if it exists
         self._clear(export_path)
 
         if self.sandboxed():
             # export to sandbox
-            export_path = os.path.expanduser(self.SANDBOXED_DIR_6) + os.path.basename(directory)
-            export_path_with_extension = "%s.%s" % (export_path, export_format)    
+            export_path = os.path.expanduser(
+                self.SANDBOXED_DIR_6) + os.path.basename(directory)
+            export_path_with_extension = "%s.%s" % (export_path, export_format)
             # clear sandbox  TODO: is this even necessary?
             self._clear(export_path)
             self._clear(export_path_with_extension)
@@ -238,7 +248,6 @@ class OmniGraffle6Exporter(object):
                 os.rename(export_path_with_extension, directory)
             else:
                 os.rename(export_path, directory)
-
 
     def backup_current_export_settings(self):
         """Save current export settings so we can restore afterwards."""
@@ -297,8 +306,8 @@ class OmniGraffle6Exporter(object):
             self.og.current_export_settings.export_scale.set(self.args.scale)
 
         # will be overridden in export_canvas() for canvas export
-        self.og.current_export_settings.area_type.set(appscript.k.entire_document)
-
+        self.og.current_export_settings.area_type.set(
+            appscript.k.entire_document)
 
     def parse_commandline(self):
         """Parse commandline, do some checks and return args."""

@@ -16,12 +16,13 @@ nosetests test_omnigraffle6_export.py:SimpleFormatTests
 
 """
 
+
 class OG6TestCase(unittest.TestCase):
 
     def setUp(self):
         """Create temp folder, copy test case data."""
         self.document = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            'test_data', 'basic', 'test.graffle')
+                                     'test_data', 'basic', 'test.graffle')
 
         self.results_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.results_dir)
@@ -29,7 +30,7 @@ class OG6TestCase(unittest.TestCase):
         self.target = None
 
     def _basic_export(self, format, *more_args):
-        if not self.target: 
+        if not self.target:
             self.target = os.path.join(self.results_dir, 'my-export')
         command = [format, self.document, self.target]
         command.extend(more_args)
@@ -64,6 +65,7 @@ class MultiPageFormatTests(OG6TestCase):
 
 
 class SimpleFormatTests(OG6TestCase):
+
     """Make sure all formats are exported correctly."""
 
     def _export_format(self, format, format_name):
@@ -78,33 +80,33 @@ class SimpleFormatTests(OG6TestCase):
 
     def test_bmp(self):
         self._export_format('bmp', "BMP")
-        
+
     def test_eps(self):
         self._export_format('eps', 'EPS')
-        
+
     def test_gif(self):
         self._export_format('gif', 'GIF')
-        
+
     def test_jpg(self):
         self._export_format('jpg', 'JPEG')
-        
-    def test_png(self):
-       self._export_format('png', 'PNG')
 
-    # TODO: this test hangs        
+    def test_png(self):
+        self._export_format('png', 'PNG')
+
+    # TODO: this test hangs
     # def test_psd(self):
     #     self._export_format('psd', 'PSD')
-        
+
     def test_tiff(self):
         self._export_format('tiff', 'TIFF')
-        
+
 
 class BasicTests(OG6TestCase):
 
     def test_file_with_one_canvas(self):
 
         self.document = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                    'test_data', 'basic', 'one-canvas.graffle')
+                                     'test_data', 'basic', 'one-canvas.graffle')
 
         self._basic_export('png')
         self.assertTrue(os.path.exists(self.target))
@@ -114,7 +116,6 @@ class BasicTests(OG6TestCase):
         self.assertTrue(os.path.exists(canvas_fname))
         c_format = self.image_stats(canvas_fname)[0]
         self.assertEqual(c_format, 'PNG')
-        
 
     def test_file_with_two_canvases(self):
 
@@ -139,8 +140,8 @@ class SingleCanvasExportTests(OG6TestCase):
 
     def test_existing_canvas(self):
         self.document = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        'test_data', 'basic', 'one-canvas.graffle')
-        
+                                     'test_data', 'basic', 'one-canvas.graffle')
+
         self._basic_export('png', "--canvas=the-canvas")
 
         self.assertTrue(os.path.exists(self.target))
@@ -149,27 +150,25 @@ class SingleCanvasExportTests(OG6TestCase):
         canvas_fname = os.path.join(self.target, 'the-canvas.png')
         self.assertTrue(os.path.exists(canvas_fname))
         c_format = self.image_stats(canvas_fname)[0]
-        self.assertEqual(c_format, 'PNG')        
+        self.assertEqual(c_format, 'PNG')
 
     def test_missing_canvas(self):
         self.document = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        'test_data', 'basic', 'one-canvas.graffle')
-        
-        
-        self.assertRaises(SystemExit, self._basic_export, 'png', "--canvas=not-a-canvas")
+                                     'test_data', 'basic', 'one-canvas.graffle')
+
+        self.assertRaises(
+            SystemExit, self._basic_export, 'png', "--canvas=not-a-canvas")
 
 
 class OptionalArgumentTests(OG6TestCase):
+
     """Test PNG format in more detail to make sure options are processed correctly."""
 
     def test_scale(self):
-        pass # TODO
+        pass  # TODO
 
     def test_resolution(self):
-        pass # TODO
+        pass  # TODO
 
     def test_transparency(self):
-        pass # TODO
-
-
-
+        pass  # TODO
