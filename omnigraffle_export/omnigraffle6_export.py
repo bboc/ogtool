@@ -181,7 +181,6 @@ class OmniGraffle6Exporter(object):
 
     @staticmethod
     def _clear(path):
-        return  # TODO: this is too dangerous!
         """Remove file or directory."""
         if os.path.exists(path):
             if os.path.isfile(path):
@@ -196,14 +195,10 @@ class OmniGraffle6Exporter(object):
         """Export to a single file."""
         export_path = os.path.join(directory, fname)
 
-        # clear target if it exists
-        self._clear(export_path)
-
         if self.sandboxed():
             # export to sandbox
             export_path = os.path.join(
                 os.path.expanduser(self.SANDBOXED_DIR_6), fname)
-
             # self._clear(export_path) TODO: is this even necessary
 
         self._og_export(export_format, export_path)
@@ -212,6 +207,7 @@ class OmniGraffle6Exporter(object):
             # move back out of sandbox
             if not os.path.exists(directory):
                 os.makedirs(directory)
+            self._clear(directory)
             os.rename(export_path, os.path.join(directory, fname))
 
     def export_dir(self, export_format, directory):
@@ -224,17 +220,11 @@ class OmniGraffle6Exporter(object):
 
         export_path = directory
 
-        # clear target if it exists
-        self._clear(export_path)
-
         if self.sandboxed():
             # export to sandbox
             export_path = os.path.expanduser(
                 self.SANDBOXED_DIR_6) + os.path.basename(directory)
             export_path_with_extension = "%s.%s" % (export_path, export_format)
-            # clear sandbox  TODO: is this even necessary?
-            self._clear(export_path)
-            self._clear(export_path_with_extension)
 
         self._og_export(export_format, export_path)
 
@@ -244,6 +234,7 @@ class OmniGraffle6Exporter(object):
             if not os.path.exists(root):
                 os.makedirs(root)
             # move back out o tssandbox
+            self._clear(directory)
             if os.path.exists(export_path_with_extension):
                 os.rename(export_path_with_extension, directory)
             else:
