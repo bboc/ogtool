@@ -15,17 +15,9 @@ Planned extensions:
 
 
 * add defaults for scale (1.0) and resolution (1.94444441795)
-* read defaults from config file (in current directory, or with commandline argument)
 * add option for html image type: jpg, png, tiff
-* add option for overriding file name when exporting a single canvas
 * find out why HTML and SVG export is not working
 * export all files in a folder
-
-exporting a document with one canvas creates just one document for that canvas, and no enclosing folder
-TODO: check number of canvases, and then trigger single canvas export in that case, fix folder handling
-
-TODO: single canvas export: if target name matches format extension, use target, otherwise use target/canvas-name.png
-
 
 File naming:
 ------------
@@ -40,9 +32,6 @@ File naming:
 
 3. Multi Canvas Export:
     * treat target as folder, create one file per canvas inside
-
-
-
 """
 
 class OmniGraffle6Exporter(object):
@@ -319,13 +308,19 @@ class OmniGraffle6Exporter(object):
 
     @staticmethod
     def get_parser():
-        parser = argparse.ArgumentParser(description="Export canvases from OmniGraffle 6.",
+        parser = argparse.ArgumentParser(fromfile_prefix_chars='@',
+                                         description="Export canvases from OmniGraffle 6.",
                                          epilog=dedent("""
             If a file fails, simply try again. 
 
-            Export uses current export settings stored in OmniGraffle for each filetype. 
+            Export uses current export settings stored in OmniGraffle for each filetype, except for those 
+            explicity overridden through arguments. Overridden export settings are restored to previous 
+            values in OmniGraffle after export.
 
-            WARNING: Commandline arguments for scale or resolution override AND CHANGE export settings in OmniGraffle!"""))
+            Arguments can be read from a file, filename needs to be prefixed with @ on the commandline. In
+            config files, use one argument per line (e.g. --resolution=1.0).
+
+            """))
 
         parser.add_argument('format', type=str,
                             help="Export formats: bmp, eps, gif, jpg, png, pdf, psd (Photoshop), tiff, vdx (Visio XML) (not supported: html, svg)")
