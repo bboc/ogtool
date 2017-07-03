@@ -240,50 +240,33 @@ class OmniGraffle6Exporter(object):
             else:
                 os.rename(export_path, directory)
 
+    SETTINGS_TO_BACKUP = (
+        'area_type',
+        'border_amount',
+        'draws_background',
+        'export_scale',
+        #'html_image_type', TODO: html image type can't be None - find out when this happens and how to avoid
+        'include_border',
+        'origin',
+        'resolution',
+        'size',
+        )
+
     def backup_current_export_settings(self):
         """Save current export settings so we can restore afterwards."""
-
-        self.settings_backup[
-            "area_type"] = self.og.current_export_settings.area_type()
-        self.settings_backup[
-            "border_amount"] = self.og.current_export_settings.border_amount()
-        self.settings_backup[
-            "resolution"] = self.og.current_export_settings.resolution()
-        self.settings_backup[
-            "export_scale"] = self.og.current_export_settings.export_scale()
-        self.settings_backup[
-            'draws_background'] = self.og.current_export_settings.draws_background()
-        #self.settings_backup['html_image_type'] = self.og.current_export_settings.html_image_type()
-        self.settings_backup[
-            'include_border'] = self.og.current_export_settings.include_border()
-        self.settings_backup[
-            'origin'] = self.og.current_export_settings.origin()
-        self.settings_backup['size'] = self.og.current_export_settings.size()
-
+        for setting in self.SETTINGS_TO_BACKUP:
+            # value = self.og.current_export_settings.area_type()
+            self.settings_backup[setting] = getattr(self.og.current_export_settings, setting)()
+        
         if self.args.verbose:
             # display current export settings
             for k, v in self.settings_backup.items():
                 print k, v
 
     def restore_saved_export_settings(self):
-
-        self.og.current_export_settings.area_type.set(
-            self.settings_backup['area_type'])
-        self.og.current_export_settings.border_amount.set(
-            self.settings_backup['border_amount'])
-        self.og.current_export_settings.resolution.set(
-            self.settings_backup['resolution'])
-        self.og.current_export_settings.export_scale.set(
-            self.settings_backup['export_scale'])
-        self.og.current_export_settings.draws_background.set(
-            self.settings_backup['draws_background'])
-        # TODO: html image type can't be None - find out when this happens and how to avoid
-        # self.og.current_export_settings.html_image_type.set(self.settings_backup['html_image_type'])
-        self.og.current_export_settings.include_border.set(
-            self.settings_backup['include_border'])
-        self.og.current_export_settings.origin.set(
-            self.settings_backup['origin'])
-        self.og.current_export_settings.size.set(self.settings_backup['size'])
+        for setting in self.SETTINGS_TO_BACKUP:    
+            # self.og.current_export_settings.area_type.set(value)
+            getattr(self.og.current_export_settings, setting).set(self.settings_backup[setting])
 
     def set_export_settings(self):
         if self.args.transparent:
