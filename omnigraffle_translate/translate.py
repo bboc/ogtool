@@ -18,13 +18,18 @@ Translation of Omnigrafle files
 
 1. Create Translation memory
     - get all cavases in file
-    - for each canvas: get all text objects and dump to file
+    - for each canvas: get all text objects and dump to pot-file
 
 2. Update translatiosn
-    - make a copy of each OG file with language suffix
-    - go through all canvases and objects and replace text
-    - export all canvases?
+    - create a copy of OmniGraffle source file language suffix
+    - read po-file and make a translation dictionary d[msgid] = msgstr
+        (replace newlines and quotes!!)
+    - walk through all objects, if text: replace with translated text
+    - save
 
+TODO: how to make sure OmniGraffle files are not changed between exporting pot and tranlsation? 
+    Create dedicated image repo (needs branchens for each resource release) or add to the repo
+     where illustrations are used (adds lots of duplication)
 
 Do we need keys and template files?
 
@@ -35,10 +40,6 @@ Do we need keys and template files?
 
 
 #. TRANSLATORS: Please leave %s as it is, because it is needed by the program.
-#. Thank you for contributing to this project.
-#: src/name.c:36
-msgid "My name is %s.\n"
-msgstr ""
 
 """ 
 
