@@ -104,8 +104,6 @@ class OmniGraffle6Translator(object):
     
         self.open_document()
         memory = {}
-        nodes = []
-        #import pdb; pdb.set_trace()
         for canvas in self.doc.canvases():
             c = Canvas(canvas)
             c.walk(os.path.basename(self.args.source), canvas.name(), memory)
@@ -115,10 +113,13 @@ class OmniGraffle6Translator(object):
         rev_memory = { memory[key] : key for key in memory.keys() }
 
         with codecs.open("%s.pot" % self.args.target, 'w+', 'utf-8') as target:
+            target.write("# <br> is a line break, \" is a quote, please do not remove those from the text.\n\n")
             for key in rev_memory.keys():
                 target.write(key)
-                target.write("msgid \"%s\"\n" % rev_memory[key])
-                target.write("msgstr \"%s\"\n\n" % rev_memory[key])
+                value = rev_memory[key].replace("\n", '<br>')
+                value = value.replace("\"", '\\\"')
+                target.write("msgid \"%s\"\n" % value)
+                target.write("msgstr \"%s\"\n\n" % value)
 
 
     def parse_commandline(self):
