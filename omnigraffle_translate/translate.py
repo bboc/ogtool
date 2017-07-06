@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import codecs
 import logging
 import os
 import shutil
@@ -9,6 +10,8 @@ import tempfile
 
 from textwrap import dedent
 import appscript
+
+from data_model import Canvas
 
 """
 Translation of Omnigrafle files
@@ -28,6 +31,14 @@ Do we need keys and template files?
     - create a key (hash) for each text
     - create a omnigraffle template file where texts are replaced by hashes
     - copy templates and fill in translations template files
+
+
+
+#. TRANSLATORS: Please leave %s as it is, because it is needed by the program.
+#. Thank you for contributing to this project.
+#: src/name.c:36
+msgid "My name is %s.\n"
+msgstr ""
 
 """ 
 
@@ -88,106 +99,27 @@ class OmniGraffle6Translator(object):
 
         logging.debug('Opened OmniGraffle file: ' + fname)
 
-    def export(self):
+    def translate(self):
 
     
         self.open_document()
-
+        memory = {}
+        nodes = []
         #import pdb; pdb.set_trace()
         for canvas in self.doc.canvases():
-
-            print(repr(canvas.name()))
-            for layer in canvas.layers():
-                print(layer.name())
-                for solid in layer.solids():
-                    try: 
-                        id = solid.id()
-                    except appscript.reference.CommandError:
-                        id = None
-                    try: 
-                        text = solid.text()
-                    except appscript.reference.CommandError:
-                        text = None
-                    print(id, text)
-
-
+            c = Canvas(canvas)
+            c.walk(os.path.basename(self.args.source), canvas.name(), memory)
         # close window and restore settings
         self.og.windows.first().close()
 
-    def export_canvas(self, export_format, directory, fname, canvas):
-        """Export a single canvas."""
-        self.og.current_export_settings.area_type.set(
-            appscript.k.current_canvas)
-        for c in self.doc.canvases():
-            if c.name() == canvas:
-                self.og.windows.first().canvas.set(c)
-                self.export_file(export_format, directory, fname)
-                return
-        else:
-            print "ERROR: canvas '%s' not found in document. List of existing canvases: \n%s" % (canvas, '\n'.join(self.get_canvas_list()))
-            self.restore_saved_export_settings()
-            sys.exit(1)
+        rev_memory = { memory[key] : key for key in memory.keys() }
 
-    @staticmethod
-    def _clear(path):
-        """Remove file or directory."""
-        if os.path.exists(path):
-            if os.path.isfile(path):
-                os.unlink(path)
-            else:
-                shutil.rmtree(path)
+        with codecs.open("%s.pot" % self.args.target, 'w+', 'utf-8') as target:
+            for key in rev_memory.keys():
+                target.write(key)
+                target.write("msgid \"%s\"\n" % rev_memory[key])
+                target.write("msgstr \"%s\"\n\n" % rev_memory[key])
 
-    def _og_export(self, export_format, export_path):
-        self.doc.save(as_=export_format, in_=export_path)
-
-    def export_file(self, export_format, directory, fname):
-        """Export to a single file."""
-        export_path = os.path.join(directory, fname)
-
-        if self.sandboxed():
-            # export to sandbox
-            export_path = os.path.join(
-                os.path.expanduser(self.SANDBOXED_DIR_6), fname)
-            # self._clear(export_path) TODO: is this even necessary
-
-        self._og_export(export_format, export_path)
-
-        if self.sandboxed():
-            # move back out of sandbox
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            self._clear(directory)
-            os.rename(export_path, os.path.join(directory, fname))
-
-    def export_dir(self, export_format, directory):
-        """
-        Export contents of a file to a directory. Sometimes OmniGraffle automatically adds 
-        an extension to the target directory, so both cases need to be handled.
-
-        TODO: test when exactly this happens and simplify code
-        """
-
-        export_path = directory
-
-        if self.sandboxed():
-            # export to sandbox
-            export_path = os.path.expanduser(
-                self.SANDBOXED_DIR_6) + os.path.basename(directory)
-            export_path_with_extension = "%s.%s" % (export_path, export_format)
-
-        self._og_export(export_format, export_path)
-
-        if self.sandboxed():
-            # make dirs if necessary
-            root = os.path.split(directory)[0]
-            if not os.path.exists(root):
-                os.makedirs(root)
-            # move back out o tssandbox
-            self._clear(directory)
-            if os.path.exists(export_path_with_extension):
-                os.rename(export_path_with_extension, directory)
-            else:
-                os.rename(export_path, directory)
 
     def parse_commandline(self):
         """Parse commandline, do some checks and return args."""
@@ -199,9 +131,7 @@ class OmniGraffle6Translator(object):
     def get_parser():
         parser = argparse.ArgumentParser(fromfile_prefix_chars='@',
                                          description="Translate canvases in OmniGraffle 6.",
-                                         epilog=dedent("""
-            If a file fails, simply try again. 
-            """))
+                                         epilog="If a file fails, simply try again.")
 
         parser.add_argument('source', type=str,
                             help='an OmniGraffle file')
@@ -209,7 +139,7 @@ class OmniGraffle6Translator(object):
                             help='fname of file with texts')
 
         parser.add_argument('--canvas', type=str,
-                            help='export canvas with given name')
+                            help='translate canvas with given name')
 
         parser.add_argument('--verbose', '-v', action='count')
 
@@ -217,10 +147,8 @@ class OmniGraffle6Translator(object):
 
 
 def main():
-
-    print('foo')
-    exporter = OmniGraffle6Translator()
-    exporter.export()
+    translator = OmniGraffle6Translator()
+    translator.translate()
 
 
 if __name__ == '__main__':
