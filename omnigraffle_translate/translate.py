@@ -113,10 +113,13 @@ class OmniGraffle6Translator(object):
         rev_memory = { memory[key] : key for key in memory.keys() }
 
         with codecs.open("%s.pot" % self.args.target, 'w+', 'utf-8') as target:
-            target.write("# <br> is a line break, \" is a quote, please do not remove those from the text.\n\n")
+
+            target.write("#. TRANSLATORS: Please keep \\n (linebreaks) and \\\" (quotes).\n")
+            target.write("#. Thank you for contributing to this project.\n\n")
+
             for key in rev_memory.keys():
                 target.write(key)
-                value = rev_memory[key].replace("\n", '<br>')
+                value = rev_memory[key].replace("\n", '\\n')
                 value = value.replace("\"", '\\\"')
                 target.write("msgid \"%s\"\n" % value)
                 target.write("msgstr \"%s\"\n\n" % value)
