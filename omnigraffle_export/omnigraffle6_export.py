@@ -62,19 +62,21 @@ class OmniGraffle6Exporter(object):
         else:
             self.args = self.parse_commandline()
 
-        self.args.format = self.args.format.lower()
-
-        if self.args.format not in self.EXPORT_FORMATS:
-            ArgumentParser.error(
-                "format '%s' not supported." % self.args.format)
-            sys.exit(1)
-
+        self._check_args()
         self.doc = None
         self.settings_backup = {}
         try:
             self.og = appscript.app('OmniGraffle')
         except (ApplicationNotFoundError):
             raise RuntimeError('Unable to connect to OmniGraffle 6 ')
+
+    def _check_args(self):
+        self.args.format = self.args.format.lower()
+
+        if self.args.format not in self.EXPORT_FORMATS:
+            ArgumentParser.error(
+                "format '%s' not supported." % self.args.format)
+            sys.exit(1)        
 
     def sandboxed(self):
         # real check using '/usr/bin/codesign --display --entitlements -
