@@ -1,7 +1,7 @@
 OmniGraffle Export tool
 =======================
 
-A command line tool that allows to export one or more canvases from [OmniGraffle](http://www.omnigroup.com/products/omnigraffle/) into various formats using [OmniGraffle AppleScript interface](http://www.omnigroup.com/mailman/archive/omnigraffle-users/2008/004785.html).
+A command line tool that allows to export one or more canvases from [OmniGraffle](http://www.omnigroup.com/products/omnigraffle/) into various formats using [OmniGraffle AppleScript interface](http://www.omnigroup.com/mailman/archive/omnigraffle-users/2008/004785.html) and [PyObjC](https://bitbucket.org/ronaldoussoren/pyobjc/).
 
 Installation
 ------------
@@ -14,11 +14,11 @@ In order to have it successfully installed and working, following is required:
 
 You can either clone the repository and use the setup tool:
 
-    setup.py install
+    $ setup.py install
 
-Or using the PIP:
+Or using  PIP:
 
-    pip install omnigraffle_export
+    $ pip install omnigraffle_export
 
 
 og6-export
@@ -137,7 +137,7 @@ to export a canvas `CondorKernel` from `sources/schemas.graffle` into `figures/C
 \end{figure}
 ```
 
-An example preprocesor in Python using [frabric](http://docs.fabfile.org/en/1).
+An example preprocesor in Python using [fabric](http://docs.fabfile.org/en/1).
 
 ```python
 from fabric.api import *
