@@ -34,7 +34,7 @@ class Item(object):
      		print self.item.text
  		for klass in self.elements:
  			collection = getattr(self.item, klass.collection)
- 			for item in collection:
+ 			for item in collection():
  				i = klass(item)
  				i.walk()
 
