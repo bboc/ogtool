@@ -30,6 +30,7 @@ setup (
         'console_scripts': [
             'omnigraffle-export = omnigraffle_export.omnigraffle_export:main',
             'og6-export = omnigraffle_export.omnigraffle6_export:main',
+            'og6-translate = omnigraffle_translate.translate:main',
         ],
     },
     test_suite = 'tests',
