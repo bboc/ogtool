@@ -2,6 +2,7 @@
 
 import argparse
 import codecs
+from collections import defaultdict
 from functools import partial
 import os
 import shutil
@@ -44,7 +45,6 @@ Do we need keys and template files?
 class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
     """Translator for OmniGraffle6"""
 
-
     def cmd_extract_translations(self):
         """Extract translations from an OmniGraffle document to a POT file."""
         self.open_document()
@@ -52,13 +52,11 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         def extract_translations(file_name, canvas_name, translation_memory, element):
             if isinstance(element, TextContainer):
                 # add text to memory
-                print repr(element.item.text())
-                print element.__class__
-                translation_memory[element.item.text()] = "#: %s/%s:%s\n" % (file_name,
-                                                                             canvas_name,
-                                                                             element.item.id())
+                location = "%s/%s" % (file_name, canvas_name)
+                translation_memory[element.item.text()].add(location)
+
         file_name = os.path.basename(self.args.source)
-        translation_memory = {}
+        translation_memory = defaultdict(set)
         for canvas in self.doc.canvases():
             c = Canvas(canvas)
             c.walk(partial(extract_translations, file_name, canvas.name(), translation_memory))
@@ -66,20 +64,18 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         self.og.windows.first().close()
         self.dump_translation_memory(translation_memory)
 
-    def dump_translation_memory(self, memory):
-        rev_memory = { memory[key] : key for key in memory.keys() }
+    def dump_translation_memory(self, tm):
 
-        with codecs.open("%s.pot" % self.args.target, 'w+', 'utf-8') as target:
-
-            target.write("#. TRANSLATORS: Please keep \\n (linebreaks) and \\\" (quotes).\n")
-            target.write("#. Thank you for contributing to this project.\n\n")
-
-            for key in rev_memory.keys():
-                target.write(key)
-                value = rev_memory[key].replace("\n", '\\n')
-                value = value.replace("\"", '\\\"')
-                target.write("msgid \"%s\"\n" % value)
-                target.write("msgstr \"%s\"\n\n" % value)
+        pot = polib.POFile()
+        
+        for text in sorted(tm.keys()):
+            entry = polib.POEntry(
+                msgid=text,
+                msgstr=text,
+                occurrences=[(location, '0') for location in tm[text]]
+            )
+            pot.append(entry)
+        pot.save(os.path.splitext(self.args.source)[0]+'.pot')
 
 
     def cmd_translate(self):
@@ -140,8 +136,6 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
                                    help="Extract a POT file from an Omnigraffle document.")
         sp.add_argument('source', type=str,
                             help='an OmniGraffle file')
-        sp.add_argument('target', type=str,
-                            help='name of file with texts')
         sp.add_argument('--canvas', type=str,
                             help='translate canvas with given name')
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_extract_translations)
