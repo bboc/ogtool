@@ -39,7 +39,6 @@ class OmniGraffle6Exporter(object):
 
     """Exporter for OmniGraffle6"""
 
-    SANDBOXED_DIR_6 = '~/Library/Containers/com.omnigroup.OmniGraffle6/Data/'
     SANDBOXED_DIR = '~/Library/Containers/com.omnigroup.OmniGraffle%s/Data/'
 
     EXPORT_FORMATS = [
