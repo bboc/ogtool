@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
 import argparse
-import logging
 import os
 import shutil
 import sys
-import tempfile
 
 from textwrap import dedent
+
 import appscript
+
+from omnigraffle_command import OmniGraffleSandboxedCommand
 
 """
 Planned extensions:
@@ -35,11 +36,8 @@ File naming:
 """
 
 
-class OmniGraffle6Exporter(object):
-
-    """Exporter for OmniGraffle6"""
-
-    SANDBOXED_DIR = '~/Library/Containers/com.omnigroup.OmniGraffle%s/Data/'
+class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
+    """Exporter for OmniGraffle6+"""
 
     EXPORT_FORMATS = [
         'bmp',
@@ -57,19 +55,8 @@ class OmniGraffle6Exporter(object):
     MULTIPAGE_FORMATS = ('pdf', 'vdx')
 
     def __init__(self, args=None):
-        """Read args from commandline if not present, and connect to OmniGraffle app."""
-        if args:
-            self.args = args
-        else:
-            self.args = self.parse_commandline()
-
-        self._check_args()
-        self.doc = None
+        super(OmniGraffleSandboxedExporter, self).__init__(args)
         self.settings_backup = {}
-        try:
-            self.og = appscript.app('OmniGraffle')
-        except (ApplicationNotFoundError):
-            raise RuntimeError('Unable to connect to OmniGraffle 6 ')
 
     def _check_args(self):
         self.args.format = self.args.format.lower()
@@ -79,50 +66,6 @@ class OmniGraffle6Exporter(object):
                 "format '%s' not supported." % self.args.format)
             sys.exit(1)        
 
-    def sandboxed(self):
-        # real check using '/usr/bin/codesign --display --entitlements - /Applications/OmniGraffle.app'
-        return self.og.version()[0] >= '6'
-        # before: return self.og.version()[0] == '6' and os.path.exists(os.path.expanduser(self.SANDBOXED_DIR))
-
-
-    def get_sandbox_path(self):
-        version = self.og.version()[0]
-        path = os.path.expanduser(self.SANDBOXED_DIR % version)
-
-        if not os.path.exists(path):
-            raise RuntimeError('OmniGraffle is sandboxed but missing sandbox path: %s' % path)
-
-        return path
-
-    def get_canvas_list(self):
-        """Return a list of names of all the canvases in the document."""
-        return [c.name() for c in self.doc.canvases()]
-
-    def open_document(self, fname=None):
-        if not fname:
-            fname = self.args.source
-
-        fname = os.path.abspath(fname)
-        if not os.path.isfile(fname) and \
-                not os.path.isfile(os.path.join(fname, "data.plist")):
-            raise ValueError('File: %s does not exists' % fname)
-
-        fname = os.path.abspath(fname)
-        self.og.activate()
-
-        # adhoc fix for https://github.com/fikovnik/omnigraffle-export/issues/23
-        # apparently the process is sandboxed and cannot access the file
-        # 16/03/2015 13:01:54.000 kernel[0]: Sandbox: OmniGraffle(66840) deny file-read-data test.graffle
-        # therefore we first try to open it manually
-
-        import subprocess
-        subprocess.call(['open', fname])
-
-        window = self.og.windows.first()
-        # doc = window.document()
-        self.doc = self.og.open(fname)
-
-        logging.debug('Opened OmniGraffle file: ' + fname)
 
     def export(self):
 
@@ -338,10 +281,6 @@ class OmniGraffle6Exporter(object):
 
 
 def main():
-
-    exporter = OmniGraffle6Exporter()
+    exporter = OmniGraffleSandboxedExporter()
     exporter.export()
 
-
-if __name__ == '__main__':
-    main()
