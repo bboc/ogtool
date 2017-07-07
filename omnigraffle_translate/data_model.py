@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 """
-The OmniGraffle document data model.
+The OmniGraffle document data model, for traversing all elements in the 
+document, e,g, to extract or inject text.
 
-Incomplete for now, because wit's unclear where the tables are hidden).
+Incomplete for now, because it's unclear where the tables are hidden).
 
 TODO: where are the tables hidden (are they groups, or subgraphs)
 TODO: look at html docs
 
-use the walk methond of Item with a test document to see what is actually in the test documents
-
-
 """
 
-import appscript 
+import appscript
+
+
 class Item(object):
     """
     An item in an OmniGraffle document.
@@ -25,15 +25,15 @@ class Item(object):
         self.has_name = False 
         self.contains_text = False
 
-    def walk(self, file_name, canvas_name, memory):
-        """Traverse the a document tree (start with a canvas."""
+    def walk(self, callable):
+        """
+        Traverse the a document tree and call a method on each element.
+        # TODO: apparently some elements are visited more than once/
+        """
+        
         if isinstance(self, Layer) and self.item.visible():
             return # skip invisible laters
-        if isinstance(self, Named):
-          pass
-        if isinstance(self, TextContainer):
-            # add text to memory
-            memory[self.item.text()] = "#: %s/%s:%s\n" % (file_name, canvas_name, self.item.id())
+        callable(self)
 
         for ix, class_name in enumerate(self.elements):
             klass = globals()[class_name]
@@ -41,11 +41,11 @@ class Item(object):
             try: 
                 for idx, item in enumerate(collection()):
                     i = klass(item)
-                    i.walk(file_name, canvas_name, memory)
+                    i.walk(callable)
             except appscript.reference.CommandError:
-                pass # print 'caught appscript.reference.CommandError'
+                pass # TODO: when does this happen, can we avoid this?
             except TypeError:
-                pass # print prefix , 'no elements'
+                pass # no elements TODO: this is hacky
 
 
 class Named(object):

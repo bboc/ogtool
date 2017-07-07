@@ -9,7 +9,7 @@ setup (
     name = "omnigraffle-export",
     version = "1.7.1",
     packages = find_packages(exclude='tests'),
-    install_requires = ['appscript','pyobjc'],
+    install_requires = ['appscript','pyobjc', 'polib'],
     author = "Filip Krikava",
     author_email = "krikava@gmail.com",
     description = "A command line utility that exports omnigraffle canvases files into various formats.",

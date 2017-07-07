@@ -2,15 +2,18 @@
 
 import argparse
 import codecs
+from functools import partial
 import os
 import shutil
 import sys
 
 import appscript
+import polib
+
 
 from omnigraffle_export.omnigraffle_command import OmniGraffleSandboxedCommand
 
-from data_model import Canvas
+from data_model import Canvas, TextContainer
 
 """
 Translation of Omnigrafle files
@@ -36,24 +39,34 @@ Do we need keys and template files?
     - create a omnigraffle template file where texts are replaced by hashes
     - copy templates and fill in translations template files
 
-
-
-#. TRANSLATORS: Please leave %s as it is, because it is needed by the program.
-
 """ 
 
-class OmniGraffle6Translator(OmniGraffleSandboxedCommand):
+class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
     """Translator for OmniGraffle6"""
-    
-    def translate(self):
+
+
+    def cmd_extract_translations(self):
+        """Extract translations from an OmniGraffle document to a POT file."""
         self.open_document()
-        memory = {}
+
+        def extract_translations(file_name, canvas_name, translation_memory, element):
+            if isinstance(element, TextContainer):
+                # add text to memory
+                print repr(element.item.text())
+                print element.__class__
+                translation_memory[element.item.text()] = "#: %s/%s:%s\n" % (file_name,
+                                                                             canvas_name,
+                                                                             element.item.id())
+        file_name = os.path.basename(self.args.source)
+        translation_memory = {}
         for canvas in self.doc.canvases():
             c = Canvas(canvas)
-            c.walk(os.path.basename(self.args.source), canvas.name(), memory)
-        # close window and restore settings
-        self.og.windows.first().close()
+            c.walk(partial(extract_translations, file_name, canvas.name(), translation_memory))
 
+        self.og.windows.first().close()
+        self.dump_translation_memory(translation_memory)
+
+    def dump_translation_memory(self, memory):
         rev_memory = { memory[key] : key for key in memory.keys() }
 
         with codecs.open("%s.pot" % self.args.target, 'w+', 'utf-8') as target:
@@ -69,11 +82,41 @@ class OmniGraffle6Translator(OmniGraffleSandboxedCommand):
                 target.write("msgstr \"%s\"\n\n" % value)
 
 
-    def parse_commandline(self):
-        """Parse commandline, do some checks and return args."""
+    def cmd_translate(self):
+        """Inject translations from a po-file into an OmniGraffle document."""
 
-        parser = self.get_parser()
-        return parser.parse_args()
+        tm = self.read_translation_memory(self.args.po_file)
+
+
+        root, ext = os.path.splitext(self.args.document)
+        translated_copy = root + '-' + self.args.language + ext
+        shutil.copyfile(self.args.document, translated_copy)
+        self.open_document(translated_copy)
+
+
+        def inject_translations(tm, element):
+            if isinstance(element, TextContainer):
+                # add text to element
+                key = element.item.text()
+                if tm.has_key(key):
+                    element.item.text.text.set(tm[key])
+                
+        for canvas in self.doc.canvases():
+            c = Canvas(canvas)
+            c.walk(partial(inject_translations, tm))
+
+        self.og.windows.first().close()
+
+    def read_translation_memory(self, filename):
+
+        tm = {}
+        po = polib.pofile(filename)
+        for entry in po.translated_entries():
+            if not entry.obsolete:
+                tm[entry.msgid] = entry.msgstr
+
+        return tm
+
 
     @staticmethod
     def get_parser():
@@ -81,22 +124,46 @@ class OmniGraffle6Translator(OmniGraffleSandboxedCommand):
                                          description="Translate canvases in OmniGraffle 6.",
                                          epilog="If a file fails, simply try again.")
 
-        parser.add_argument('source', type=str,
-                            help='an OmniGraffle file')
-        parser.add_argument('target', type=str,
-                            help='fname of file with texts')
+        subparsers = parser.add_subparsers()
+        OmniGraffleSandboxedTranslator.add_parser_extract(subparsers)
+        OmniGraffleSandboxedTranslator.add_parser_translate(subparsers)
 
-        parser.add_argument('--canvas', type=str,
-                            help='translate canvas with given name')
+
 
         parser.add_argument('--verbose', '-v', action='count')
 
         return parser
 
+    @staticmethod
+    def add_parser_extract(subparsers):
+        sp = subparsers.add_parser('extract',
+                                   help="Extract a POT file from an Omnigraffle document.")
+        sp.add_argument('source', type=str,
+                            help='an OmniGraffle file')
+        sp.add_argument('target', type=str,
+                            help='name of file with texts')
+        sp.add_argument('--canvas', type=str,
+                            help='translate canvas with given name')
+        sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_extract_translations)
+
+    @staticmethod
+    def add_parser_translate(subparsers):
+        sp = subparsers.add_parser('translate',
+                                   help="Translate an Omnigraffle document with strings from a po file.")
+        sp.add_argument('document', type=str,
+                            help='an OmniGraffle file')
+        sp.add_argument('language', type=str,
+                            help='two-digit language identifier')
+        sp.add_argument('po_file', type=str,
+                            help='name of po-file')
+        sp.add_argument('--canvas', type=str,
+                            help='translate canvas with given name')
+        sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_translate)
+
 
 def main():
-    translator = OmniGraffle6Translator()
-    translator.translate()
+    translator = OmniGraffleSandboxedTranslator()
+    translator.args.func(translator)
 
 
 if __name__ == '__main__':
