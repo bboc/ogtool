@@ -46,7 +46,13 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
     """Translator for OmniGraffle6"""
 
     def cmd_extract_translations(self):
-        """Extract translations from an OmniGraffle document to a POT file."""
+        """
+        Extract translations from an OmniGraffle document to a POT file.
+
+        Translation memory is compiled in defaultdict (of sets) that has the messages as keys
+        so duplicates are automatically eliminated, and locations are collected as a set, again
+        to eliminate duplicates.
+        """
         self.open_document()
 
         def extract_translations(file_name, canvas_name, translation_memory, element):
@@ -65,25 +71,43 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         self.dump_translation_memory(translation_memory)
 
     def dump_translation_memory(self, tm):
+        """
+        Dump translation memory to a pot-file.
+
+        Sort messages in pot-file by location (if there's more locations, sort locations
+        alphabetiaclly first) so that translators can process canvases alphabetially and 
+        easily review exported images in a folder one by one.
+        """
+        container = []
+        for text, locations in tm.items():
+            container.append((sorted([l for l in locations]), text))
+        container.sort(key=lambda x: x[0][0])
 
         pot = polib.POFile()
-        
-        for text in sorted(tm.keys()):
+        for locations, text in container:
             entry = polib.POEntry(
                 msgid=text,
                 msgstr=text,
-                occurrences=[(location, '0') for location in tm[text]]
+                occurrences=[(location, '0') for location in locations]
             )
             pot.append(entry)
         pot.save(os.path.splitext(self.args.source)[0]+'.pot')
+
+
+    def cmd_list(self):
+        """List all canvases in file."""
+
+        self.open_document(self.args.source)                
+        for canvas in self.doc.canvases():
+            print "%s (in %s) " % (canvas.name(), 
+                                   os.path.splitext(self.args.source)[0])
+        self.og.windows.first().close()
 
 
     def cmd_translate(self):
         """Inject translations from a po-file into an OmniGraffle document."""
 
         tm = self.read_translation_memory(self.args.po_file)
-
-
         root, ext = os.path.splitext(self.args.document)
         translated_copy = root + '-' + self.args.language + ext
         shutil.copyfile(self.args.document, translated_copy)
@@ -104,13 +128,12 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         self.og.windows.first().close()
 
     def read_translation_memory(self, filename):
-
+        """Read translation memory from a po-file."""
         tm = {}
         po = polib.pofile(filename)
         for entry in po.translated_entries():
             if not entry.obsolete:
                 tm[entry.msgid] = entry.msgstr
-
         return tm
 
 
@@ -122,12 +145,9 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
 
         subparsers = parser.add_subparsers()
         OmniGraffleSandboxedTranslator.add_parser_extract(subparsers)
+        OmniGraffleSandboxedTranslator.add_parser_list(subparsers)
         OmniGraffleSandboxedTranslator.add_parser_translate(subparsers)
-
-
-
         parser.add_argument('--verbose', '-v', action='count')
-
         return parser
 
     @staticmethod
@@ -139,6 +159,14 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         sp.add_argument('--canvas', type=str,
                             help='translate canvas with given name')
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_extract_translations)
+
+    @staticmethod
+    def add_parser_list(subparsers):
+        sp = subparsers.add_parser('list',
+                                   help="List canvases in a file.")
+        sp.add_argument('source', type=str,
+                            help='an OmniGraffle file')
+        sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_list)
 
     @staticmethod
     def add_parser_translate(subparsers):
