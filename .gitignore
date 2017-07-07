@@ -13,3 +13,4 @@ omnigraffle_export.egg-info
 *.pyc
 omnigraffle_export.sublime-project
 omnigraffle_export.sublime-workspace
+tmp/
