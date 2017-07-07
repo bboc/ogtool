@@ -220,7 +220,6 @@ class OmniGraffle6Exporter(object):
             # move back out of sandbox
             if not os.path.exists(directory):
                 os.makedirs(directory)
-            self._clear(directory)
             os.rename(export_path, os.path.join(directory, fname))
 
     def export_dir(self, export_format, directory):
