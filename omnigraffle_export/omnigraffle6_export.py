@@ -40,6 +40,8 @@ class OmniGraffle6Exporter(object):
     """Exporter for OmniGraffle6"""
 
     SANDBOXED_DIR_6 = '~/Library/Containers/com.omnigroup.OmniGraffle6/Data/'
+    SANDBOXED_DIR = '~/Library/Containers/com.omnigroup.OmniGraffle%s/Data/'
+
     EXPORT_FORMATS = [
         'bmp',
         'eps',
@@ -79,9 +81,19 @@ class OmniGraffle6Exporter(object):
             sys.exit(1)        
 
     def sandboxed(self):
-        # real check using '/usr/bin/codesign --display --entitlements -
-        # /Applications/OmniGraffle.app'
-        return self.og.version()[0] == '6' and os.path.exists(os.path.expanduser(self.SANDBOXED_DIR_6))
+        # real check using '/usr/bin/codesign --display --entitlements - /Applications/OmniGraffle.app'
+        return self.og.version()[0] >= '6'
+        # before: return self.og.version()[0] == '6' and os.path.exists(os.path.expanduser(self.SANDBOXED_DIR))
+
+
+    def get_sandbox_path(self):
+        version = self.og.version()[0]
+        path = os.path.expanduser(self.SANDBOXED_DIR % version)
+
+        if not os.path.exists(path):
+            raise RuntimeError('OmniGraffle is sandboxed but missing sandbox path: %s' % path)
+
+        return path
 
     def get_canvas_list(self):
         """Return a list of names of all the canvases in the document."""
@@ -199,8 +211,7 @@ class OmniGraffle6Exporter(object):
 
         if self.sandboxed():
             # export to sandbox
-            export_path = os.path.join(
-                os.path.expanduser(self.SANDBOXED_DIR_6), fname)
+            export_path = os.path.join(self.get_sandbox_path(), fname)
             # self._clear(export_path) TODO: is this even necessary
 
         self._og_export(export_format, export_path)
@@ -224,8 +235,7 @@ class OmniGraffle6Exporter(object):
 
         if self.sandboxed():
             # export to sandbox
-            export_path = os.path.expanduser(
-                self.SANDBOXED_DIR_6) + os.path.basename(directory)
+            export_path = os.path.join(self.get_sandbox_path(), os.path.basename(directory))
             export_path_with_extension = "%s.%s" % (export_path, export_format)
 
         self._og_export(export_format, export_path)
