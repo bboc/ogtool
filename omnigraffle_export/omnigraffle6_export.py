@@ -114,8 +114,9 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
             self.export_canvas(self.args.format, target, fname, canvas_name)
 
         else:
-            # 4. File with multiple canvases: export to '<target>'
-            self.export_dir(self.args.format, target)
+            # 4. File with multiple canvases: export to '<target>/<source-filename>/'
+            target_path = os.path.join(target, os.path.splitext(os.path.split(self.args.source)[1])[0])
+            self.export_dir(self.args.format, target_path)
 
         # close window and restore settings
         self.og.windows.first().close()
