@@ -3,7 +3,7 @@
 The OmniGraffle document data model, for traversing all elements in the 
 document, e,g, to extract or inject text.
 
-Incomplete for now, because it's unclear where the tables are hidden).
+Incomplete for now, because it's unclear where the tables are hidden.
 
 TODO: where are the tables hidden (are they groups, or subgraphs)
 TODO: look at html docs
