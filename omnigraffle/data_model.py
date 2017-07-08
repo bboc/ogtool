@@ -8,6 +8,9 @@ Incomplete for now, because it's unclear where the tables are hidden.
 TODO: where are the tables hidden (are they groups, or subgraphs)
 TODO: look at html docs
 
+
+document > canvas 
+canvas > graphics 
 """
 
 import appscript
@@ -47,13 +50,17 @@ class Item(object):
             except TypeError:
                 pass # no elements TODO: this is hacky
 
+    @property
+    def properties(self):
+        return self.item.properties()
+
+    @properties.setter
+    def properties(self, value):
+        self.item.properties.set(value)
+
 
 class Named(object):
     has_name = True
-
-
-class TextContainer(object):
-    contains_text = True
 
 
 class Canvas(Item, Named):
@@ -70,13 +77,23 @@ class Graphic(Item):  # Group', 'Line', 'Solid
     collection = 'graphics'
     elements = ['IncomingLine', 'Line', 'OutgoingLine'] # TODO: also contains "user data items', 'what is that?'"
 
+    @property
+    def stroke_color(self):
+        return self.item.stroke_color()
 
-class Group(Item): 
+    @stroke_color.setter
+    def stroke_color(self, value):
+        self.item.stroke_color.set(value)
+
+
+
+class Group(Graphic): 
+    # TODO: graphics might be enough to enumerate, subgraphs and tables are also groups
     elements = ['Graphic', 'Group', 'Shape', 'Solid', 'Subgraph']
     collection = 'groups'
 
 
-class Label(Item, TextContainer):
+class Label(Shape):
     collection = 'labels'
 
 
@@ -85,16 +102,16 @@ class Layer(Item):
     elements = ['Graphic', 'Group', 'Line', 'Shape', 'Solid', 'Subgraph']
 
 
-class Line(Item):
+class Line(Graphic):
     collection = 'lines'
     elements = ['Label']
 
 
-class IncomingLine(Line):
+class IncomingLine(Graphic):
     collection = 'incoming_lines'
 
 
-class OutgoingLine(Line):
+class OutgoingLine(Graphic):
     collection = 'outgoing_lines'
 
 
@@ -103,17 +120,39 @@ class Row(Item):
     elements = ['Group', 'Graphic'] # TODO: what else?'?
 
 
-class Shape(Item, TextContainer):
+class Shape(Solid, Named):
     collection = 'shapes'
 
 
-class Solid(Item, TextContainer): # Polygon', 'Shape
+class Solid(Graphic, TextContainer): # Polygon', 'Shape
     collection = 'solids'
 
+    @property
+    def text(self):
+        return self.item.text()
 
-class Subgraph(object):
+    @text.setter
+    def fill_color(self, value):
+        self.item.text.set(value)
+
+    @property
+    def fill_color(self):
+        return self.item.fill_color()
+
+    @fill_color.setter
+    def fill_color(self, value):
+        self.item.fill_color.set(value)
+
+
+class Subgraph(Group):
+
     collection = 'subgraphs'
     elements = ['Graphic', 'Group', 'Shape', 'Solid', 'Subgraph']
+
+
+class Table(Group):
+    collection = 'tables'
+    elements = [''Column', 'Row']
 
 
 class TableSlice(Item):
