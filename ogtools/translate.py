@@ -5,7 +5,6 @@ import codecs
 from collections import defaultdict
 from functools import partial
 import os
-import shutil
 import sys
 
 import appscript
@@ -108,11 +107,8 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         """Inject translations from a po-file into an OmniGraffle document."""
 
         tm = self.read_translation_memory(self.args.po_file)
-        root, ext = os.path.splitext(self.args.document)
-        translated_copy = root + '-' + self.args.language + ext
-        shutil.copyfile(self.args.document, translated_copy)
-        self.open_document(translated_copy)
-
+        # operate on a copy!!
+        self.open_copy_of_document(self.args.document, self.args.language)
 
         def inject_translations(tm, element):
             if isinstance(element, TextContainer):

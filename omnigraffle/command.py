@@ -3,6 +3,8 @@
 import argparse
 import logging
 import os
+import shutil
+
 
 import appscript
 
@@ -74,6 +76,14 @@ class OmniGraffleSandboxedCommand(object):
         self.doc = self.og.open(fname)
 
         logging.debug('Opened OmniGraffle file: ' + fname)
+
+    def open_copy_of_document(self, filename, suffix):
+        """create and open a copy of an omnigraffle document."""
+        root, ext = os.path.splitext(filename)
+        doc_copy = root + '-' + suffix + ext
+        shutil.copyfile(filename, doc_copy)
+        self.open_document(doc_copy)
+
 
     def parse_commandline(self):
         """Parse commandline, do some checks and return args."""

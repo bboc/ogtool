@@ -12,6 +12,7 @@ from textwrap import dedent
 
 import appscript
 import polib
+import yaml
 
 
 from omnigraffle.command import OmniGraffleSandboxedCommand
@@ -43,6 +44,8 @@ Do we need keys and template files?
     - copy templates and fill in translations template files
 
 """ 
+
+NONE = 'none'
 
 class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
     """Some tools for OmniGraffle 6+"""
@@ -123,10 +126,10 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
             $yaml_colors
         """))
         COLORBOX = """<p><span style="background-color: #%(color)s">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> #%(color)s </p>\n"""
-        YAML_COLOR = """    - c%(color)s: none"""
+        YAML_COLOR = """    x%(color)s: none"""
         YAML_COLOR_HTML = """<span style="background-color: #%(color)s">&nbsp;&nbsp;&nbsp;&nbsp;- </span> c%(color)s: none"""
         
-        YAML_FONT = """    - %s: none"""
+        YAML_FONT = """    %s: none"""
         YAML_FONT_HTML = """&nbsp;&nbsp;&nbsp;&nbsp;- %s: none"""
         COLOR_HEADER = "<h2>%s</h2>\n"
         
@@ -177,6 +180,41 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
                                      yaml_colors='\n'.join(yaml_colors)))
 
 
+    def cmd_replace(self):
+        """Replace some fonts and colors in a copy of a document."""
+
+        stream = open(self.args.replacements, "r")
+        replacements = yaml.load(stream)
+
+        print repr(replacements)
+        # operate on a copy!!
+        self.open_copy_of_document(self.args.document, 'replaced')
+
+        def replace(replacements, verbosity, element):
+            if verbosity > 2 and not isinstance(element, Document):
+                print element.item.id(), element.item.class_(), element.__class__
+            if isinstance(element, Named):
+                pass
+            if isinstance(element, HasStroke):
+                pass
+            if isinstance(element, Filled):
+                pass
+            if isinstance(element, TextContainer):
+                if element.item.text(): # element might still have no text
+                    current_font = element.text.font()
+                    try:
+                        new_font = replacements['fonts'][current_font]
+                    except KeyError:
+                        new_font = NONE
+                    print current_font, 'should be replaced by', new_font
+                    if new_font != NONE:
+                        element.text.font.set(new_font)
+
+        d = Document(self.doc)
+        d.walk(partial(replace, replacements, self.args.verbose))
+        self.og.windows.first().close()
+
+
     @staticmethod
     def get_parser():
         parser = argparse.ArgumentParser(fromfile_prefix_chars='@',
@@ -185,6 +223,7 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
 
         subparsers = parser.add_subparsers()
         OmniGraffleSandboxedTools.add_parser_dump(subparsers)
+        OmniGraffleSandboxedTools.add_parser_replace(subparsers)
         return parser
 
     @staticmethod
@@ -197,6 +236,20 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
                             help='select a canvas with given name')
         sp.add_argument('--verbose', '-v', action='count')
         sp.set_defaults(func=OmniGraffleSandboxedTools.cmd_dump_colors_and_fonts)
+
+
+    @staticmethod
+    def add_parser_replace(subparsers):
+        sp = subparsers.add_parser('replace',
+                                   help="Replace some fonts and / or colors in an OmniGraffle document.")
+        sp.add_argument('document', type=str,
+                            help='an OmniGraffle file')
+        sp.add_argument('replacements', type=str,
+                            help='a yaml file with replacement for fonts and colors')
+        sp.add_argument('--canvas', type=str,
+                            help='select a canvas with given name')
+        sp.add_argument('--verbose', '-v', action='count')
+        sp.set_defaults(func=OmniGraffleSandboxedTools.cmd_replace)
 
 
 def main():
