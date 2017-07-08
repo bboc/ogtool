@@ -165,7 +165,7 @@
 			<key>RowSpacing</key>
 			<real>36</real>
 			<key>SheetTitle</key>
-			<string>shared later</string>
+			<string>shared layer</string>
 			<key>UniqueID</key>
 			<integer>1</integer>
 			<key>VPages</key>
@@ -173,7 +173,7 @@
 		</dict>
 	</array>
 	<key>ModificationDate</key>
-	<string>2017-07-08 09:11:25 +0000</string>
+	<string>2017-07-08 17:41:16 +0000</string>
 	<key>Modifier</key>
 	<string>Bernhard Bockelbrink</string>
 	<key>NotesVisible</key>
@@ -236,7 +236,7 @@
 			<array>
 				<string>layer one</string>
 				<string>layer 2 (invisible)</string>
-				<string>shared later</string>
+				<string>shared layer</string>
 			</array>
 			<key>AutoAdjust</key>
 			<false/>
@@ -296,9 +296,9 @@
 						<key>ID</key>
 						<integer>314</integer>
 						<key>Offset</key>
-						<real>-2.2222222810908079</real>
+						<real>-2.2222223281860352</real>
 						<key>Position</key>
-						<real>0.50351604004386175</real>
+						<real>0.50351601839065552</real>
 						<key>RotationType</key>
 						<integer>0</integer>
 					</dict>
@@ -311,6 +311,15 @@
 						</dict>
 						<key>stroke</key>
 						<dict>
+							<key>Color</key>
+							<dict>
+								<key>b</key>
+								<real>4.5777065690089265e-05</real>
+								<key>g</key>
+								<real>3.0518043793392844e-05</real>
+								<key>r</key>
+								<real>3.0518043793392844e-05</real>
+							</dict>
 							<key>Draws</key>
 							<string>NO</string>
 						</dict>
@@ -759,6 +768,31 @@ bo}</string>
 					</dict>
 					<key>Text</key>
 					<dict>
+						<key>RTFD</key>
+						<data>
+						BAtzdHJlYW10eXBlZIHoA4QBQISE
+						hBJOU0F0dHJpYnV0ZWRTdHJpbmcA
+						hIQITlNPYmplY3QAhZKEhIQITlNT
+						dHJpbmcBlIQBKw5hIGhpZGRlbiBs
+						YWJlbIaEAmlJAQ6ShISEDE5TRGlj
+						dGlvbmFyeQCUhAFpA5KElpYHTlND
+						b2xvcoaShISEB05TQ29sb3IAlIQB
+						YwGEBGZmZmYBgwsp/z6DXylLPgGG
+						koSWlhBOU1BhcmFncmFwaFN0eWxl
+						hpKEhIQXTlNNdXRhYmxlUGFyYWdy
+						YXBoU3R5bGUAhIQQTlNQYXJhZ3Jh
+						cGhTdHlsZQCUhARDQ0BTAgCEhIQH
+						TlNBcnJheQCUmQyShISECU5TVGV4
+						dFRhYgCUhAJDZgAchpKEo6IAOIaS
+						hKOiAFSGkoSjogBwhpKEo6IAgYwA
+						hpKEo6IAgagAhpKEo6IAgcQAhpKE
+						o6IAgeAAhpKEo6IAgfwAhpKEo6IA
+						gRgBhpKEo6IAgTQBhpKEo6IAgVAB
+						hoYAhpKElpYGTlNGb250hpKEhIQG
+						TlNGb250HpSZGIQFWzI0Y10GAAAA
+						DgAAAP/+VQBiAHUAbgB0AHUAAACE
+						AWYcmwCbAZsAmwCGhoY=
+						</data>
 						<key>Text</key>
 						<string>{\rtf1\ansi\ansicpg1252\cocoartf1504\cocoasubrtf830
 {\fonttbl\f0\fnil\fcharset0 Ubuntu;}
@@ -1189,7 +1223,7 @@ another hidden box}</string>
 				<real>0.0</real>
 			</dict>
 			<key>MasterSheet</key>
-			<string>shared later</string>
+			<string>shared layer</string>
 			<key>Orientation</key>
 			<integer>1</integer>
 			<key>PrintOnePage</key>
@@ -1211,7 +1245,7 @@ another hidden box}</string>
 			<key>AllLayers</key>
 			<array>
 				<string>layer-1</string>
-				<string>shared later</string>
+				<string>shared layer</string>
 			</array>
 			<key>AutoAdjust</key>
 			<false/>
@@ -1666,7 +1700,7 @@ another box}</string>
 				<real>0.0</real>
 			</dict>
 			<key>MasterSheet</key>
-			<string>shared later</string>
+			<string>shared layer</string>
 			<key>Orientation</key>
 			<integer>1</integer>
 			<key>PrintOnePage</key>
@@ -1692,14 +1726,13 @@ another box}</string>
 	<key>WindowInfo</key>
 	<dict>
 		<key>CurrentSheet</key>
-		<integer>0</integer>
+		<integer>1</integer>
 		<key>Expanded_Canvases</key>
 		<array>
-			<string>canvas-1</string>
 			<string>canvas-2</string>
 		</array>
 		<key>Frame</key>
-		<string>{{26, 0}, {1111, 1057}}</string>
+		<string>{{289, 0}, {1111, 877}}</string>
 		<key>ShowInfo</key>
 		<true/>
 		<key>ShowRuler</key>
@@ -1711,9 +1744,9 @@ another box}</string>
 		<key>TopSlabHeight</key>
 		<real>531</real>
 		<key>VisibleRegion</key>
-		<string>{{-224.99999999999997, -750}, {1260.000033378602, 2000.0000529819079}}</string>
+		<string>{{-827, -1314.9999999999998}, {2465.2173465839642, 3130.4347258209064}}</string>
 		<key>Zoom</key>
-		<real>0.44999998807907104</real>
+		<real>0.23000000417232513</real>
 		<key>ZoomValues</key>
 		<array>
 			<array>

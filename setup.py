@@ -31,6 +31,7 @@ setup (
             'omnigraffle-export = omnigraffle_export.omnigraffle_export:main',
             'og-export = ogtools.export:main',
             'og-translate = ogtools.translate:main',
+            'og-tool = ogtools.ogtool:main',
         ],
     },
     test_suite = 'tests',

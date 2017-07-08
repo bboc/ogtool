@@ -2,15 +2,6 @@
 """
 The OmniGraffle document data model, for traversing all elements in the 
 document, e,g, to extract or inject text.
-
-Incomplete for now, because it's unclear where the tables are hidden.
-
-TODO: where are the tables hidden (are they groups, or subgraphs)
-TODO: look at html docs
-
-
-document > canvas 
-canvas > graphics 
 """
 
 import appscript
@@ -28,14 +19,15 @@ class Item(object):
         self.has_name = False 
         self.contains_text = False
 
-    def walk(self, callable):
+    def walk(self, callable, skip_invisible_layers = True):
         """
         Traverse the a document tree and call a method on each element.
         # TODO: apparently some elements are visited more than once/
         """
         
-        if isinstance(self, Layer) and self.item.visible():
-            return # skip invisible laters
+        if skip_invisible_layers:
+            if isinstance(self, Layer) and self.item.visible():
+                return # skip invisible laters
         callable(self)
 
         for ix, class_name in enumerate(self.elements):
@@ -44,7 +36,7 @@ class Item(object):
             try: 
                 for idx, item in enumerate(collection()):
                     i = klass(item)
-                    i.walk(callable)
+                    i.walk(callable, skip_invisible_layers)
             except appscript.reference.CommandError:
                 pass # TODO: when does this happen, can we avoid this?
             except TypeError:
@@ -60,81 +52,16 @@ class Item(object):
 
 
 class Named(object):
-    has_name = True
-
-
-class Canvas(Item, Named):
-    collection = 'canvases'
-    elements = ['Graphic', 'Group', 'Layer', 'Line', 'Shape', 'Solid', 'Subgraph']
-
-
-class Column(Item):
-    collection = 'columns'
-    elements = ['Group'] # TODO: what else?'?
-
-
-class Graphic(Item):  # Group', 'Line', 'Solid
-    collection = 'graphics'
-    elements = ['IncomingLine', 'Line', 'OutgoingLine'] # TODO: also contains "user data items', 'what is that?'"
-
     @property
-    def stroke_color(self):
-        return self.item.stroke_color()
+    def name(self):
+        return self.item.name()
 
-    @stroke_color.setter
-    def stroke_color(self, value):
-        self.item.stroke_color.set(value)
-
-
-
-class Group(Graphic): 
-    # TODO: graphics might be enough to enumerate, subgraphs and tables are also groups
-    elements = ['Graphic', 'Group', 'Shape', 'Solid', 'Subgraph']
-    collection = 'groups'
+    @name.setter
+    def name(self, value):
+        self.item.name.set(value)
 
 
-class Label(Shape):
-    collection = 'labels'
-
-
-class Layer(Item):
-    collection = 'layers'
-    elements = ['Graphic', 'Group', 'Line', 'Shape', 'Solid', 'Subgraph']
-
-
-class Line(Graphic):
-    collection = 'lines'
-    elements = ['Label']
-
-
-class IncomingLine(Graphic):
-    collection = 'incoming_lines'
-
-
-class OutgoingLine(Graphic):
-    collection = 'outgoing_lines'
-
-
-class Row(Item):
-    collection = 'rows' 
-    elements = ['Group', 'Graphic'] # TODO: what else?'?
-
-
-class Shape(Solid, Named):
-    collection = 'shapes'
-
-
-class Solid(Graphic, TextContainer): # Polygon', 'Shape
-    collection = 'solids'
-
-    @property
-    def text(self):
-        return self.item.text()
-
-    @text.setter
-    def fill_color(self, value):
-        self.item.text.set(value)
-
+class Filled(object):
     @property
     def fill_color(self):
         return self.item.fill_color()
@@ -144,19 +71,99 @@ class Solid(Graphic, TextContainer): # Polygon', 'Shape
         self.item.fill_color.set(value)
 
 
-class Subgraph(Group):
+class HasStroke(object):
+    @property
+    def stroke_color(self):
+        return self.item.stroke_color()
 
-    collection = 'subgraphs'
-    elements = ['Graphic', 'Group', 'Shape', 'Solid', 'Subgraph']
+    @stroke_color.setter
+    def stroke_color(self, value):
+        self.item.stroke_color.set(value)
 
 
-class Table(Group):
-    collection = 'tables'
-    elements = [''Column', 'Row']
+class TextContainer(object):
+    @property
+    def text(self):
+        return self.item.text
+
+    @text.setter
+    def text(self, value):
+        self.item.text.set(value)
+
+
+class Document(Item):
+    elements = ['Canvas']
+
+
+class Canvas(Item, Named):
+    collection = 'canvases'
+    # TODO: are all objects in layers?
+    elements = ['Graphic', 'Group', 'Layer', 'Line', 'Shape', 'Solid', 'Subgraph']
+
+
+class Layer(Item):
+    collection = 'layers'
+    elements = ['Graphic', 'Group', 'Line', 'Shape', 'Solid', 'Subgraph']
 
 
 class TableSlice(Item):
     """A row or column of a table."""
     collection = 'table_slices'
     elements = ['Group'] # TODO: what else?'?
+
+
+class Column(Item):
+    collection = 'columns'
+    elements = ['Group'] # TODO: what else?'?
+
+
+class Row(Item):
+    collection = 'rows' 
+    elements = ['Group', 'Graphic'] # TODO: what else?'?
+
+
+class Graphic(Item, HasStroke):  # Group', 'Line', 'Solid
+    collection = 'graphics'
+    elements = ['IncomingLine', 'Line', 'OutgoingLine'] # TODO: also contains "user data items', 'what is that?'"
+
+
+class Group(Graphic): 
+    # TODO: graphics might be enough to enumerate, subgraphs and tables are also groups
+    elements = ['Graphic', 'Group', 'Shape', 'Solid', 'Subgraph']
+    collection = 'groups'
+
+
+class IncomingLine(Graphic):
+    collection = 'incoming_lines'
+
+
+class Line(Graphic):
+    collection = 'lines'
+    elements = ['Label']
+
+
+class OutgoingLine(Graphic):
+    collection = 'outgoing_lines'
+
+
+class Solid(Graphic, Filled, TextContainer): # Polygon', 'Shape
+    collection = 'solids'
+
+
+class Shape(Solid, Named):
+    collection = 'shapes'
+
+
+class Label(Shape, Named):
+    collection = 'labels'
+
+
+class Subgraph(Group):
+    collection = 'subgraphs'
+    elements = ['Graphic', 'Group', 'Shape', 'Solid', 'Subgraph']
+
+
+class Table(Group):
+    collection = 'tables'
+    elements = ['Column', 'Row']
 
