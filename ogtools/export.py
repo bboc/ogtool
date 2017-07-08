@@ -9,7 +9,7 @@ from textwrap import dedent
 
 import appscript
 
-from omnigraffle_command import OmniGraffleSandboxedCommand
+from omnigraffle.command import OmniGraffleSandboxedCommand
 
 """
 Planned extensions:

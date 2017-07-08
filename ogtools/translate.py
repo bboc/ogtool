@@ -12,9 +12,9 @@ import appscript
 import polib
 
 
-from omnigraffle_export.omnigraffle_command import OmniGraffleSandboxedCommand
+from omnigraffle.command import OmniGraffleSandboxedCommand
 
-from data_model import Canvas, TextContainer
+from omnigraffle.data_model import Canvas, TextContainer
 
 """
 Translation of Omnigrafle files
