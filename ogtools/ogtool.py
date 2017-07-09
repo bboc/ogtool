@@ -4,6 +4,7 @@ import argparse
 import codecs
 from collections import defaultdict
 from functools import partial
+import importlib
 import os
 import shutil
 from string import Template
@@ -215,6 +216,22 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
         self.og.windows.first().close()
 
 
+    def cmd_run_plugin(self):
+        """Run a plugin on a copy of a document."""
+
+        stream = open(self.args.config, "r")
+        config = yaml.load(stream)
+
+        # operate on a copy!!
+        self.open_copy_of_document(self.args.document, self.args.plugin)
+
+        plugin = importlib.import_module("ogplugins.%s" % self.args.plugin, package='ogplugins')
+
+        plugin.main(self.doc, config, self.args.canvas, self.args.verbose)
+
+        self.og.windows.first().close()
+
+
     @staticmethod
     def get_parser():
         parser = argparse.ArgumentParser(fromfile_prefix_chars='@',
@@ -224,6 +241,7 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
         subparsers = parser.add_subparsers()
         OmniGraffleSandboxedTools.add_parser_dump(subparsers)
         OmniGraffleSandboxedTools.add_parser_replace(subparsers)
+        OmniGraffleSandboxedTools.add_parser_update(subparsers)
         return parser
 
     @staticmethod
@@ -250,6 +268,21 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
                             help='select a canvas with given name')
         sp.add_argument('--verbose', '-v', action='count')
         sp.set_defaults(func=OmniGraffleSandboxedTools.cmd_replace)
+
+    @staticmethod
+    def add_parser_update(subparsers):
+        sp = subparsers.add_parser('run-plugin',
+                                   help="Run a plugin on a copy of an OmniGraffle document .")
+        sp.add_argument('plugin', type=str,
+                            help='the plugin to use (must point to a file in plugins, file must implement a method main(document, config, canvas, verbose)')
+        sp.add_argument('document', type=str,
+                            help='an OmniGraffle file')
+        sp.add_argument('config', type=str,
+                            help='a yaml file with configuration for the plugin')
+        sp.add_argument('--canvas', type=str,
+                            help='select a canvas with given name')
+        sp.add_argument('--verbose', '-v', action='count')
+        sp.set_defaults(func=OmniGraffleSandboxedTools.cmd_run_plugin)
 
 
 def main():
