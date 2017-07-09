@@ -16,15 +16,12 @@ class Item(object):
     elements = []
     def __init__(self, item):
         self.item = item
-        self.has_name = False 
-        self.contains_text = False
 
     def walk(self, callable, skip_invisible_layers = True):
         """
         Traverse the a document tree and call a method on each element.
         # TODO: apparently some elements are visited more than once/
         """
-        
         if skip_invisible_layers:
             if isinstance(self, Layer) and self.item.visible():
                 return # skip invisible laters

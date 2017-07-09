@@ -29,9 +29,9 @@ setup (
     entry_points = {
         'console_scripts': [
             'omnigraffle-export = omnigraffle_export.omnigraffle_export:main',
-            'og-export = ogtools.export:main',
-            'og-translate = ogtools.translate:main',
-            'og-tool = ogtools.ogtool:main',
+            'ogexport = ogtools.export:main',
+            'ogtranslate = ogtools.translate:main',
+            'ogtool = ogtools.ogtool:main',
         ],
     },
     test_suite = 'tests',

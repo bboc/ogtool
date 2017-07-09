@@ -54,13 +54,15 @@ class OmniGraffleSandboxedCommand(object):
     def open_document(self, fname=None):
         if not fname:
             fname = self.args.source
-
+            
         fname = os.path.abspath(fname)
         if not os.path.isfile(fname) and \
                 not os.path.isfile(os.path.join(fname, "data.plist")):
             raise ValueError('File: %s does not exists' % fname)
 
-        fname = os.path.abspath(fname)
+        if self.args.verbose:
+            print 'opening', fname
+
         self.og.activate()
 
         # adhoc fix for https://github.com/fikovnik/omnigraffle-export/issues/23
