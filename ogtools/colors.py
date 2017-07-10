@@ -48,7 +48,7 @@ YAML = Template(dedent("""
 """))
 
 COLORBOX = """<p><span style="background-color: #%(color)s">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> #%(color)s </p>\n"""
-YAML_COLOR = """    x%(color)s: none"""
+YAML_COLOR = """    %(color)s: none"""
 YAML_COLOR_HTML = """<span style="background-color: #%(color)s">&nbsp;&nbsp;&nbsp;&nbsp;- </span> c%(color)s: none"""
 
 YAML_FONT = """    %s: none"""

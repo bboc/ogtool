@@ -32,7 +32,7 @@ def main(document, config, canvas=None, verbose=None):
             for f in config['fonts'].keys():
                 fonts['all'].add(f)
         for c in config['colors'].keys():
-            colors.add(color_components(c[1:]))
+            colors.add(color_components(c))
 
     result = {
         'fonts': sorted([f for f in fonts['all']]),
