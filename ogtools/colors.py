@@ -101,27 +101,20 @@ def dump_colors_and_fonts_to_yaml_and_html(target, colors, fonts):
             yaml_colors.append(YAML_COLOR % dict(color=hexcolors(color)))
             yaml_colors_html.append(YAML_COLOR_HTML % dict(color=hexcolors(color)))
 
-
     all_fonts = set()
     fonts_by_canvas_html = []
-    print repr(fonts)
     for canvas in sorted(fonts.keys()):
-        print canvas
         canvas_fonts = []
         for f in sorted(fonts[canvas]):
             all_fonts.add(f)
-            print '--', f
             canvas_fonts.append(f)
         fonts_by_canvas_html.append(CANVAS_FONTS_HTML % (canvas, ', '.join(canvas_fonts)))
-
 
     yaml_fonts = []
     yaml_fonts_html = []
     for f in sorted(all_fonts):
         yaml_fonts.append(YAML_FONT % f)
         yaml_fonts_html.append(YAML_FONT_HTML % f)
-
-
     
     target_path = os.path.splitext(os.path.split(target)[1])[0]
     with codecs.open(target_path + ".html", 'w+', 'utf-8') as fp:
