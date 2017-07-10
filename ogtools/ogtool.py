@@ -6,6 +6,8 @@ from collections import defaultdict
 from functools import partial
 import importlib
 import os
+import pkgutil
+
 import shutil
 from string import Template
 import sys
@@ -20,6 +22,8 @@ from omnigraffle.command import OmniGraffleSandboxedCommand
 
 from omnigraffle.data_model import Document, Canvas, TextContainer, Named, HasStroke, Filled
 from colors import hexcolors, dump_colors_and_fonts_to_yaml_and_html
+import ogplugins
+
 
 """
 Translation of Omnigrafle files
@@ -143,16 +147,28 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
         self.og.windows.first().close()
 
 
+    def cmd_list_plugins(self):
+        """List all installed plugins."""
+
+        print "Available plugins:\n"
+        for importer, modname, ispkg in pkgutil.iter_modules(ogplugins.__path__):
+            m = importer.find_module(modname).load_module(modname)
+            # remove empty lines from docstring
+            text = [s for s in m.__doc__.splitlines() if s.strip()]
+            # doc = m.__doc__.splitlines()[0]
+            print "%s: %s\n" % (modname, text[0])
+
     @staticmethod
     def get_parser():
         parser = argparse.ArgumentParser(fromfile_prefix_chars='@',
-                                         description="Manipulate some stuff in omnigraffle documents.",
+                                         description="Manipulate data in OmniGraffle documents.",
                                          epilog="If a file fails, simply try again.")
 
         subparsers = parser.add_subparsers()
         OmniGraffleSandboxedTools.add_parser_dump(subparsers)
         OmniGraffleSandboxedTools.add_parser_replace(subparsers)
         OmniGraffleSandboxedTools.add_parser_update(subparsers)
+        OmniGraffleSandboxedTools.add_parser_list(subparsers)
         return parser
 
     @staticmethod
@@ -195,6 +211,11 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
         sp.add_argument('--verbose', '-v', action='count')
         sp.set_defaults(func=OmniGraffleSandboxedTools.cmd_run_plugin)
 
+    @staticmethod
+    def add_parser_list(subparsers):
+        sp = subparsers.add_parser('list',
+                                   help="List available plugins.")
+        sp.set_defaults(func=OmniGraffleSandboxedTools.cmd_list_plugins)
 
 def main():
     ogtool = OmniGraffleSandboxedTools()

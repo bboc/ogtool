@@ -1,5 +1,5 @@
 """
-A plugin to update colors and fonts (and adapt font size).
+Update colors and fonts in a document (and adapt font size).
 """
 
 from functools import partial

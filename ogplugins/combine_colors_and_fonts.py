@@ -1,8 +1,7 @@
 """
-Example plugin for ogtools.
+Combine yaml and html output from several runs of ogtool dump into.
 
-Combine yaml from several files into one
-
+Usage:
 
 $ og-tool run-plugin example_plugin ./tests/color-test.graffle  ogplugins/example_plugin.yaml --canvas my-canvas -vvv
 

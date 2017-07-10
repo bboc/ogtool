@@ -1,7 +1,5 @@
 """
-Example plugin for ogtools.
-
-Print a list of all nodes in a document.
+Example plugin for ogtools: print a list of all nodes in a document.
 
 To run:
 

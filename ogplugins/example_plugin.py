@@ -1,5 +1,5 @@
 """
-Example plugin for ogtools.
+Example plugin for ogtools, lists document canvases and contents of config file.
 
 To run:
 
