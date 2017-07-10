@@ -1,0 +1,8 @@
+Known Bugs:
+	- Item.walk() does not find all elements, e.g. ogtranslate does not find texts in pattern-group-headers.graffle
+	- it seems that Item.walk() does access some elements several times, maybe that can be avoided? Needs more research about item-ids, naïve approach of just storing ids and obnject type did not reduce number of items visited.
+	- ogtranslate apparently does not translate line labels
+Documentation:
+	- make a better readme, create separate files for each command?
+Features:
+	- replace colors in update_colors_and_fonts
