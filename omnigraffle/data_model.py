@@ -14,14 +14,17 @@ class Item(object):
     May be Named and/or a TextContainer.
     """
     elements = []
+    _current_canvas_name = ''
     def __init__(self, item):
         self.item = item
 
     def walk(self, callable, skip_invisible_layers = True):
         """
         Traverse the a document tree and call a method on each element.
-        # TODO: apparently some elements are visited more than once/
+        # TODO: apparently some elements are visited more than once, others are never visited
         """
+        if isinstance(self, Canvas):
+            Item._current_canvas_name = self.item.name()
         if skip_invisible_layers:
             if isinstance(self, Layer) and self.item.visible():
                 return # skip invisible laters
@@ -38,6 +41,10 @@ class Item(object):
                 pass # TODO: when does this happen, can we avoid this?
             except TypeError:
                 pass # no elements TODO: this is hacky
+
+    @property
+    def canvas_name(self):
+        return Item._current_canvas_name
 
     @property
     def properties(self):

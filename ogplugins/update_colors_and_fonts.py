@@ -1,5 +1,5 @@
 """
-A plugin to update fonts and adapt font size.
+A plugin to update colors and fonts (and adapt font size).
 """
 
 from functools import partial
@@ -11,9 +11,16 @@ def main(document, config, canvas=None, verbose=None):
 
     fonts:
       source-font: [replacement-font, size-delta (int)]
+      OpenSans: [OpenSans-Thin, -2]
+    colors:
+        source-color: target-color
+        03FC48: 03FC49
     """
+    print repr(config)
+    exit
 
     def replace(config, element):
+        # TODO: replace colors/fill colors
         if isinstance(element, TextContainer):
             if element.item.text(): # element might still have no text
                 current_font = element.text.font()

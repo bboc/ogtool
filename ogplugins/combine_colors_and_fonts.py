@@ -11,7 +11,7 @@ create collect.yaml:
     ls -b *.yaml
     prefix each line with '- ' in sublime text
     remove crowding.yaml etc.
-$ ogtool run-plugin combine_colors_and_fonts src/structural-patterns.graffle collect.yaml
+$ ogtool run-plugin combine_colors_and_fonts dummy.graffle collect.yaml
 """
 
 import glob
@@ -22,7 +22,7 @@ from ogtools.colors import hexcolors, dump_colors_and_fonts_to_yaml_and_html, co
 
 
 def main(document, config, canvas=None, verbose=None):
-    fonts = set()
+    fonts = dict(all=set())
     colors = set()
 
     for item in config:
@@ -30,12 +30,12 @@ def main(document, config, canvas=None, verbose=None):
         config = yaml.load(stream)
         if config['fonts']:
             for f in config['fonts'].keys():
-                fonts.add(f)
+                fonts['all'].add(f)
         for c in config['colors'].keys():
             colors.add(color_components(c[1:]))
 
     result = {
-        'fonts': sorted([f for f in fonts]),
+        'fonts': sorted([f for f in fonts['all']]),
         'colors': sorted([c for c in colors]),
     }
     with open('combined.yaml', 'w+') as target:

@@ -59,7 +59,7 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
 
         self.open_document()
         colors = set()
-        fonts = set()
+        fonts = defaultdict(set)
         def extract(colors, fonts, verbosity, element):
             if verbosity > 3 and not isinstance(element, Document):
                 print element.item.id(), element.item.class_(), element.__class__
@@ -79,7 +79,7 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
                     if verbosity > 1:
                         print "-- text element:", repr(element.item.text()), repr(element.text.color()), repr(element.text.font()), repr(element.text.size()), hexcolors(element.text.color())
                     colors.add(element.text.color())
-                    fonts.add(element.text.font())
+                    fonts[element.canvas_name].add(element.text.font())
 
         d = Document(self.doc)
         d.walk(partial(extract, colors, fonts, self.args.verbose))
