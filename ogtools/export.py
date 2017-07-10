@@ -66,7 +66,6 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
                 "format '%s' not supported." % self.args.format)
             sys.exit(1)        
 
-
     def export(self):
 
         self.backup_current_export_settings()
@@ -75,7 +74,8 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
 
         # removes trailing slash, if present!
         target = os.path.abspath(self.args.target)
-
+        if self.args.verbose:
+            print self.args.source
         def _split_filename(fn, frmt):
             """Return (directory, filenname) if extension matches frmt, (directory, '') otherwise."""
             ext = os.path.splitext(target)[1]
@@ -155,7 +155,7 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
         if self.sandboxed():
             # export to sandbox
             export_path = os.path.join(self.get_sandbox_path(), fname)
-            # self._clear(export_path) TODO: is this even necessary
+            # self._clear(export_path) TODO: is this even necessary?
 
         self._og_export(export_format, export_path)
 

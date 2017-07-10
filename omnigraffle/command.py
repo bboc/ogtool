@@ -86,7 +86,6 @@ class OmniGraffleSandboxedCommand(object):
         shutil.copyfile(filename, doc_copy)
         self.open_document(doc_copy)
 
-
     def parse_commandline(self):
         """Parse commandline, do some checks and return args."""
 
