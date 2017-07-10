@@ -1,8 +1,7 @@
-init:
-	pip install -r requirements.txt
-
 test:
 	nosetests
-
 dev:
 	python setup.py develop
+
+install:
+	python setup.py install
