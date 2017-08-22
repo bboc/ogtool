@@ -6,10 +6,11 @@ from textwrap import dedent
 import os
 import codecs
 
+
 def hexcolors(color):
     """Convert tuple (red, green, blue) with 16 bit components to hex string."""
-    try: 
-        return ''.join(['{0:#04x}'.format(c/256)[2:] for c in color]).upper()
+    try:
+        return ''.join(['{0:#04x}'.format(c / 256)[2:] for c in color]).upper()
     except TypeError:
         return '--unknown--'
 
@@ -18,8 +19,9 @@ def color_components(hexstring):
     """Convert hexadecimal representation of color (e.g. '36FFcd')."""
     def component(c):
         return int(c, 16) * 256
-    return (component(hexstring[0:2]), component(hexstring[2:4]), component(hexstring[4:6]))  
- 
+    return (component(hexstring[0:2]), component(hexstring[2:4]), component(hexstring[4:6]))
+
+
 HTML = Template(dedent("""
     <html>
     <head><title>Color Palette</title></head>
@@ -57,6 +59,7 @@ COLOR_HEADER = "<h2>%s</h2>\n"
 
 CANVAS_FONTS_HTML = '<p><strong>%s</strong>: %s</p>'
 
+
 def dump_colors_and_fonts_to_yaml_and_html(target, colors, fonts):
     """
     colors: set of tuples with RGB components as 16-bit intege
@@ -69,8 +72,8 @@ def dump_colors_and_fonts_to_yaml_and_html(target, colors, fonts):
 
     color_groups = [(GRAY, 'grays'), (RED, 'reds'), (GREEN, 'greens'), (BLUE, 'blues')]
 
-    grouped_colors = defaultdict(list) # the colors grouped by most prominent component
-    
+    grouped_colors = defaultdict(list)  # the colors grouped by most prominent component
+
     def primary_color(color):
         """determine whether a color is either a red, a green, a blue or a gray."""
         def check(c, reference, other1, other2):
@@ -87,10 +90,10 @@ def dump_colors_and_fonts_to_yaml_and_html(target, colors, fonts):
             return GRAY
 
     # sort colors into groups
-    for c in colors: 
+    for c in colors:
         if c:
             grouped_colors[primary_color(c)].append(c)
-    
+
     color_groups_html = []
     yaml_colors = []
     yaml_colors_html = []
@@ -115,13 +118,13 @@ def dump_colors_and_fonts_to_yaml_and_html(target, colors, fonts):
     for f in sorted(all_fonts):
         yaml_fonts.append(YAML_FONT % f)
         yaml_fonts_html.append(YAML_FONT_HTML % f)
-    
+
     target_path = os.path.splitext(os.path.split(target)[1])[0]
     with codecs.open(target_path + ".html", 'w+', 'utf-8') as fp:
-        fp.write(HTML.substitute(color_groups='\n'.join(color_groups_html), 
-                                fonts_by_canvas='\n'.join(fonts_by_canvas_html),
-                                yaml_fonts='\n'.join(yaml_fonts_html),
-                                yaml_colors='\n'.join(yaml_colors_html)))
+        fp.write(HTML.substitute(color_groups='\n'.join(color_groups_html),
+                                 fonts_by_canvas='\n'.join(fonts_by_canvas_html),
+                                 yaml_fonts='\n'.join(yaml_fonts_html),
+                                 yaml_colors='\n'.join(yaml_colors_html)))
     with codecs.open(target_path + ".yaml", 'w+', 'utf-8') as fp:
         fp.write(YAML.substitute(yaml_fonts='\n'.join(yaml_fonts),
                                  yaml_colors='\n'.join(yaml_colors)))

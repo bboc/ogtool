@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
-import argparse
 import logging
 import os
 import shutil
 
-
 import appscript
+
 
 class OmniGraffleSandboxedCommand(object):
 
@@ -24,19 +23,17 @@ class OmniGraffleSandboxedCommand(object):
         self.settings_backup = {}
         try:
             self.og = appscript.app('OmniGraffle')
-        except (ApplicationNotFoundError):
+        except (appscript.ApplicationNotFoundError):
             raise RuntimeError('Unable to connect to OmniGraffle 6 ')
 
     def _check_args(self):
-    	"""Hook to validate commandline arguments."""
-    	pass
-
+        """Hook to validate commandline arguments."""
+        pass
 
     def sandboxed(self):
         # real check using '/usr/bin/codesign --display --entitlements - /Applications/OmniGraffle.app'
         return self.og.version()[0] >= '6'
         # before: return self.og.version()[0] == '6' and os.path.exists(os.path.expanduser(self.SANDBOXED_DIR))
-
 
     def get_sandbox_path(self):
         version = self.og.version()[0]
@@ -54,7 +51,7 @@ class OmniGraffleSandboxedCommand(object):
     def open_document(self, fname=None):
         if not fname:
             fname = self.args.source
-            
+
         fname = os.path.abspath(fname)
         if not os.path.isfile(fname) and \
                 not os.path.isfile(os.path.join(fname, "data.plist")):
@@ -73,7 +70,7 @@ class OmniGraffleSandboxedCommand(object):
         import subprocess
         subprocess.call(['open', fname])
 
-        window = self.og.windows.first()
+        # window = self.og.windows.first()
         # doc = window.document()
         self.doc = self.og.open(fname)
 
@@ -91,4 +88,3 @@ class OmniGraffleSandboxedCommand(object):
 
         parser = self.get_parser()
         return parser.parse_args()
-

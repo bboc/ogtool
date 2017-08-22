@@ -1,18 +1,13 @@
 #!/usr/bin/env python
 
 import argparse
-import codecs
 from collections import defaultdict
 from functools import partial
 import os
-import sys
 
-import appscript
 import polib
 
-
 from omnigraffle.command import OmniGraffleSandboxedCommand
-
 from omnigraffle.data_model import Canvas, TextContainer
 
 """
@@ -29,7 +24,7 @@ Translation of Omnigrafle files
     - walk through all objects, if text: replace with translated text
     - save
 
-TODO: how to make sure OmniGraffle files are not changed between exporting pot and tranlsation? 
+TODO: how to make sure OmniGraffle files are not changed between exporting pot and tranlsation?
     Create dedicated image repo (needs branchens for each resource release) or add to the repo
      where illustrations are used (adds lots of duplication)
 
@@ -38,8 +33,8 @@ Do we need keys and template files?
     - create a key (hash) for each text
     - create a omnigraffle template file where texts are replaced by hashes
     - copy templates and fill in translations template files
+"""
 
-""" 
 
 class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
     """Translator for OmniGraffle6"""
@@ -74,7 +69,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         Dump translation memory to a pot-file.
 
         Sort messages in pot-file by location (if there's more locations, sort locations
-        alphabetiaclly first) so that translators can process canvases alphabetially and 
+        alphabetiaclly first) so that translators can process canvases alphabetially and
         easily review exported images in a folder one by one.
         """
         container = []
@@ -90,18 +85,16 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
                 occurrences=[(location, '0') for location in locations]
             )
             pot.append(entry)
-        pot.save(os.path.splitext(self.args.source)[0]+'.pot')
-
+        pot.save(os.path.splitext(self.args.source)[0] + '.pot')
 
     def cmd_list(self):
         """List all canvases in file."""
 
-        self.open_document(self.args.source)                
+        self.open_document(self.args.source)
         for canvas in self.doc.canvases():
-            print "%s (in %s) " % (canvas.name(), 
+            print "%s (in %s) " % (canvas.name(),
                                    os.path.splitext(self.args.source)[0])
         self.og.windows.first().close()
-
 
     def cmd_translate(self):
         """Inject translations from a po-file into an OmniGraffle document."""
@@ -114,9 +107,9 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
             if isinstance(element, TextContainer):
                 # add text to element
                 key = element.item.text()
-                if tm.has_key(key):
+                if key in tm:
                     element.item.text.text.set(tm[key])
-                
+
         for canvas in self.doc.canvases():
             c = Canvas(canvas)
             c.walk(partial(inject_translations, tm))
@@ -131,7 +124,6 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
             if not entry.obsolete:
                 tm[entry.msgid] = entry.msgstr
         return tm
-
 
     @staticmethod
     def get_parser():
@@ -151,9 +143,9 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         sp = subparsers.add_parser('extract',
                                    help="Extract a POT file from an Omnigraffle document.")
         sp.add_argument('source', type=str,
-                            help='an OmniGraffle file')
+                        help='an OmniGraffle file')
         sp.add_argument('--canvas', type=str,
-                            help='translate canvas with given name')
+                        help='translate canvas with given name')
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_extract_translations)
 
     @staticmethod
@@ -161,7 +153,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         sp = subparsers.add_parser('list',
                                    help="List canvases in a file.")
         sp.add_argument('source', type=str,
-                            help='an OmniGraffle file')
+                        help='an OmniGraffle file')
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_list)
 
     @staticmethod
@@ -169,13 +161,13 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         sp = subparsers.add_parser('translate',
                                    help="Translate an Omnigraffle document with strings from a po file.")
         sp.add_argument('document', type=str,
-                            help='an OmniGraffle file')
+                        help='an OmniGraffle file')
         sp.add_argument('language', type=str,
-                            help='two-digit language identifier')
+                        help='two-digit language identifier')
         sp.add_argument('po_file', type=str,
-                            help='name of po-file')
+                        help='name of po-file')
         sp.add_argument('--canvas', type=str,
-                            help='translate canvas with given name')
+                        help='translate canvas with given name')
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_translate)
 
 

@@ -8,6 +8,7 @@ import logging
 from omnigraffle_export import omnigraffle
 from omnigraffle_export import omnigraffle_export
 
+
 class OmniGraffleExportTest(unittest.TestCase):
 
     def __init__(self, methodName='runTest'):
@@ -16,7 +17,7 @@ class OmniGraffleExportTest(unittest.TestCase):
 
     def setUp(self):
         self.path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            'test_data', 'basic', 'test.graffle')
+                                 'test_data', 'basic', 'test.graffle')
         # self.schema = omnigraffle.OmniGraffle().open(self.path)
         # self.assertTrue(self.schema != None)
 
@@ -35,7 +36,7 @@ class OmniGraffleExportTest(unittest.TestCase):
 
     def testExport(self):
         schema = omnigraffle.OmniGraffle().open(self.path)
-        
+
         tmpfile = self.genTempFileName('pdf')
 
         self.assertTrue(omnigraffle_export.export_one(schema, tmpfile, 'Canvas 1'))
@@ -89,6 +90,6 @@ class OmniGraffleExportTest(unittest.TestCase):
 
         return tmpfile
 
+
 if __name__ == '__main__':
     unittest.main()
-
