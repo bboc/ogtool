@@ -3,7 +3,7 @@ Example plugin for ogtools, lists document canvases and contents of config file.
 
 To run:
 
-$ og-tool run-plugin example_plugin ./tests/color-test.graffle  ogplugins/example_plugin.yaml --canvas my-canvas -vvv
+$ ogtool run-plugin example_plugin ./tests/color-test.graffle  ogplugins/example_plugin.yaml --canvas my-canvas -vvv
 """
 
 

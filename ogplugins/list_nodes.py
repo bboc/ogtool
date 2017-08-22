@@ -3,7 +3,7 @@ Example plugin for ogtools: print a list of all nodes in a document.
 
 To run:
 
-$ og-tool run-plugin example_plugin ./tests/color-test.graffle  ogplugins/example_plugin.yaml --canvas my-canvas -vvv
+$ ogtool run-plugin list_nodes ./tests/color-test.graffle  ogplugins/example_plugin.yaml --canvas my-canvas -vvv
 """
 
 from functools import partial

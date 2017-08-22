@@ -3,7 +3,7 @@ Combine yaml and html output from several runs of ogtool dump into.
 
 Usage:
 
-$ og-tool run-plugin example_plugin ./tests/color-test.graffle  ogplugins/example_plugin.yaml --canvas my-canvas -vvv
+$ ogtool run-plugin example_plugin ./tests/color-test.graffle  ogplugins/example_plugin.yaml --canvas my-canvas -vvv
 
 create collect.yaml:
     ls -b *.yaml
