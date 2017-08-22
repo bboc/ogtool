@@ -121,8 +121,11 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
     def cmd_run_plugin(self):
         """Run a plugin on a copy of a document."""
 
-        stream = open(self.args.config, "r")
-        config = yaml.load(stream)
+        if self.args.noconfig:
+            config = {}
+        else:
+            stream = open(self.args.config, "r")
+            config = yaml.load(stream)
 
         # operate on a copy!!
         self.open_copy_of_document(self.args.document, self.args.plugin)
@@ -194,8 +197,10 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
                         help='the plugin to use (must point to a file in plugins, file must implement a method main(document, config, canvas, verbose)')
         sp.add_argument('document', type=str,
                         help='an OmniGraffle file')
-        sp.add_argument('config', type=str,
+        sp.add_argument('--config', type=str,
                         help='a yaml file with configuration for the plugin')
+        sp.add_argument('--noconfig', action='store_true',
+                        help='skip loading config file')
         sp.add_argument('--canvas', type=str,
                         help='select a canvas with given name')
         sp.add_argument('--verbose', '-v', action='count')

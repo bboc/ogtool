@@ -3,13 +3,11 @@ Combine yaml and html output from several runs of ogtool dump into.
 
 Usage:
 
-$ ogtool run-plugin example_plugin ./tests/color-test.graffle  ogplugins/example_plugin.yaml --canvas my-canvas -vvv
-
 create collect.yaml:
     ls -b *.yaml
     prefix each line with '- ' in sublime text
     remove crowding.yaml etc.
-$ ogtool run-plugin combine_colors_and_fonts dummy.graffle collect.yaml
+$ ogtool run-plugin combine_colors_and_fonts dummy.graffle --config=collect.yaml
 """
 
 
