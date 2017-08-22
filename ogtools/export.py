@@ -62,9 +62,9 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
         self.args.format = self.args.format.lower()
 
         if self.args.format not in self.EXPORT_FORMATS:
-            ArgumentParser.error(
+            argparse.ArgumentParser.error(
                 "format '%s' not supported." % self.args.format)
-            sys.exit(1)        
+            sys.exit(1)
 
     def export(self):
 
@@ -76,6 +76,7 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
         target = os.path.abspath(self.args.target)
         if self.args.verbose:
             print self.args.source
+
         def _split_filename(fn, frmt):
             """Return (directory, filenname) if extension matches frmt, (directory, '') otherwise."""
             ext = os.path.splitext(target)[1]
@@ -167,7 +168,7 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
 
     def export_dir(self, export_format, directory):
         """
-        Export contents of a file to a directory. Sometimes OmniGraffle automatically adds 
+        Export contents of a file to a directory. Sometimes OmniGraffle automatically adds
         an extension to the target directory, so both cases need to be handled.
 
         TODO: test when exactly this happens and simplify code
@@ -204,21 +205,21 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
         'origin',
         'resolution',
         'size',
-        )
+    )
 
     def backup_current_export_settings(self):
         """Save current export settings so we can restore afterwards."""
         for setting in self.SETTINGS_TO_BACKUP:
             # value = self.og.current_export_settings.area_type()
             self.settings_backup[setting] = getattr(self.og.current_export_settings, setting)()
-        
+
         if self.args.verbose:
             # display current export settings
             for k, v in self.settings_backup.items():
                 print k, v
 
     def restore_saved_export_settings(self):
-        for setting in self.SETTINGS_TO_BACKUP:    
+        for setting in self.SETTINGS_TO_BACKUP:
             # self.og.current_export_settings.area_type.set(value)
             getattr(self.og.current_export_settings, setting).set(self.settings_backup[setting])
 
@@ -248,10 +249,10 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
         parser = argparse.ArgumentParser(fromfile_prefix_chars='@',
                                          description="Export canvases from OmniGraffle 6.",
                                          epilog=dedent("""
-            If a file fails, simply try again. 
+            If a file fails, simply try again.
 
-            Export uses current export settings stored in OmniGraffle for each filetype, except for those 
-            explicity overridden through arguments. Overridden export settings are restored to previous 
+            Export uses current export settings stored in OmniGraffle for each filetype, except for those
+            explicity overridden through arguments. Overridden export settings are restored to previous
             values in OmniGraffle after export.
 
             Arguments can be read from a file, filename needs to be prefixed with @ on the commandline. In
@@ -284,4 +285,3 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
 def main():
     exporter = OmniGraffleSandboxedExporter()
     exporter.export()
-
