@@ -9,18 +9,23 @@ $ ogtool run-plugin list_nodes ./tests/color-test.graffle  --noconfig --canvas m
 from functools import partial
 from collections import defaultdict
 
+import appscript
+
 from omnigraffle.data_model import Document
 
 
 def main(document, config, canvas=None, verbose=None):
 
     def list_nodes(nodes, element):
-        if not isinstance(element, Document):
-            # print element.item.id(), element.item.class_(), element.__class__
-            nodes['%s (%s)' % (element.item.id(), element.__class__)] += 1
-            ids[element.item.id()] += 1
-        else:
-            pass  # documents have no id!
+        if element.text:
+            print element.text
+        try:
+            element.item.id()
+        except appscript.reference.CommandError:
+            return  # some elements (e.g. Document) have no id
+        print element.item_info(), element.__class__
+        nodes['%s (%s)' % (element.item.id(), element.__class__)] += 1
+        ids[element.item.id()] += 1
 
     nodes = defaultdict(int)
     ids = defaultdict(int)
@@ -28,4 +33,4 @@ def main(document, config, canvas=None, verbose=None):
     d.walk(partial(list_nodes, nodes))
 
     for i in sorted(ids.keys()):
-        print i
+        print i, ids[i]

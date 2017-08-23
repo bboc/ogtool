@@ -8,7 +8,7 @@ $ ogtool run-plugin extract_text ./tests/color-test.graffle --noconfig --canvas 
 
 import codecs
 
-from omnigraffle.data_model import Canvas, TextContainer
+from omnigraffle.data_model import Canvas, Named
 
 
 def main(document, config, canvas=None, verbose=None):
@@ -16,8 +16,12 @@ def main(document, config, canvas=None, verbose=None):
     with codecs.open(document.name() + ".txt", 'w+', 'utf-8') as fp:
 
         def dump_text(element):
-            if isinstance(element, TextContainer):
-                fp.write(element.item.text())
+            text = element.text
+            if text:
+                fp.write(text)
+                fp.write('\n')
+            if isinstance(element, Named) and element.name:
+                fp.write(element.name)
                 fp.write('\n')
 
         def dump_canvas(c):
