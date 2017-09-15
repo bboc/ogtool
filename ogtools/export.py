@@ -28,7 +28,7 @@ File naming:
     * target filename has no extension: create folder if necessary, and export to "Canvas Name" in that folder
 
 2. Multipage File:
-    * target filename has proper format extencion: export to that filename (create dirs along the way)
+    * target filename has proper format extension: export to that filename (create dirs along the way)
     * target filename has no extension: create folder if necessary, and export to source.basename + extension in that folder
 
 3. Multi Canvas Export:
