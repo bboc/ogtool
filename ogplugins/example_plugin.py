@@ -7,10 +7,9 @@ $ ogtool run-plugin example_plugin ./tests/color-test.graffle  --config=ogplugin
 """
 
 
-def main(document, config, canvas=None, verbose=None):
+def main(document, config, canvas=None):
     print 'example plugin'
     print "canvas", canvas
-    print 'verbose', verbose
     print "canvases in document:"
     for c in document.canvases():
         print c.name()

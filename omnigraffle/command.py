@@ -57,8 +57,7 @@ class OmniGraffleSandboxedCommand(object):
                 not os.path.isfile(os.path.join(fname, "data.plist")):
             raise ValueError('File: %s does not exists' % fname)
 
-        if self.args.verbose:
-            print 'opening', fname
+        print 'opening', fname
 
         self.og.activate()
 
@@ -87,4 +86,21 @@ class OmniGraffleSandboxedCommand(object):
         """Parse commandline, do some checks and return args."""
 
         parser = self.get_parser()
-        return parser.parse_args()
+        args = parser.parse_args()
+        # set up loglevel
+        logging.basicConfig(level=args.loglevel)
+        return args
+
+    @staticmethod
+    def add_verbose(parser):
+        parser.add_argument(
+            '-d', '--debug',
+            help="print debug output",
+            action="store_const", dest="loglevel", const=logging.DEBUG,
+            default=logging.WARNING
+        )
+        parser.add_argument(
+            '-v', '--verbose',
+            help="more detailed output",
+            action="store_const", dest="loglevel", const=logging.INFO,
+        )

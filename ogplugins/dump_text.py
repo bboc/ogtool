@@ -11,7 +11,7 @@ import codecs
 from omnigraffle.data_model import Canvas, Named
 
 
-def main(document, config, canvas=None, verbose=None):
+def main(document, config, canvas=None):
 
     with codecs.open(document.name() + ".txt", 'w+', 'utf-8') as fp:
 

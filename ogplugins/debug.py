@@ -12,11 +12,13 @@ import pdb
 from omnigraffle.data_model import Document, Canvas, Layer
 
 
-def main(document, config, canvas=None, verbose=None):
+def main(document, config, canvas=None):
 
     def debug(element):
         if isinstance(element, Canvas) or isinstance(element, Layer):
-            print element.item_info()
+            # note: since this is normal plugin output,
+            # it does NOT go to logging.debug!
+            print element.info
             pdb.set_trace()
 
     d = Document(document)

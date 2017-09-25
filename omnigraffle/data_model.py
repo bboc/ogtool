@@ -6,16 +6,13 @@ document, e,g, to extract or inject text.
 from __future__ import print_function
 
 from functools import partial
-
+import logging
 import appscript
 
 
-DEBUG_MODE = False
-
-
 def debug(level, *args):
-    if DEBUG_MODE:
-        print("|   " * level, *args)
+    msg = "|   " * level + " ".join(args)
+    logging.debug(msg)
 
 
 class Item(object):
@@ -49,13 +46,15 @@ class Item(object):
             pass  # elements without id cannot be tracked
 
         if isinstance(self, Canvas):
-            debug("\n\n-----------------Canvas %s\n-----------------\n\n" % self.item.name())
+            debug("\n\n-----------------Canvas: '%s'-----------------\n" % self.item.name())
             Item._current_canvas_name = self.item.name()
         if isinstance(self, Layer):
+            debug("\n\n---Layer: '%s'---\n" % self.item.name())
             if skip_invisible_layers and not self.item.visible():
+                debug("\n...skipped invisible layer ...\n")
                 return  # skip invisible layers
 
-        debug('::::', self.item_info())
+        debug('::::', self.info)
 
         callback(self)
 
@@ -67,14 +66,19 @@ class Item(object):
             except appscript.reference.CommandError:
                 # apparently there's a problem with some collections, e.g. 'IncomingLine' in Graphics
                 continue
+            try:
+                length = len(collection())
+            except TypeError:  # the length of some collections cannot be determined
+                debug("+--- processing collection", class_name, "elements: (not available)")
+            else:
+                debug("+--- processing collection", class_name, "elements: %s" % length)
+                for idx, item in enumerate(collection()):
+                    debug("   ", class_name, "# %s" % idx)
+                    i = klass(item)
+                    i.walk(callback, skip_invisible_layers, nodes_visited, level + 1)
 
-            debug("+--- processing collection", class_name, len(collection()))
-            for idx, item in enumerate(collection()):
-                debug("   ", class_name, "#", idx)
-                i = klass(item)
-                i.walk(callback, skip_invisible_layers, nodes_visited, level + 1)
-
-    def item_info(self):
+    @property
+    def info(self):
         return "(%s) %s == %s (%s...)" % (self.id, self.class_, self.name, self.text[:20])
 
     @property
@@ -112,6 +116,10 @@ class Item(object):
         except appscript.reference.CommandError:
             return ''
 
+    @text.setter
+    def text(self, value):
+        self.item.text.set(value)
+
     @property
     def name(self):
         try:
@@ -119,21 +127,23 @@ class Item(object):
         except appscript.reference.CommandError:
             return ''
 
-
-class Named(object):
-    @property
-    def name(self):
-        return self.item.name()
-
     @name.setter
     def name(self, value):
         self.item.name.set(value)
 
 
+class Named(object):
+    pass
+
+
 class Filled(object):
     @property
     def fill_color(self):
-        return self.item.fill_color()
+        try:
+            return self.item.fill_color()
+        except appscript.reference.CommandError:
+            logging.debug("Item has not fill color: %s" % self.info)
+            return None
 
     @fill_color.setter
     def fill_color(self, value):
@@ -143,7 +153,11 @@ class Filled(object):
 class HasStroke(object):
     @property
     def stroke_color(self):
-        return self.item.stroke_color()
+        try:
+            return self.item.stroke_color()
+        except appscript.reference.CommandError:
+            logging.debug("Item has not stroke color: %s" % self.info)
+            return None
 
     @stroke_color.setter
     def stroke_color(self, value):
@@ -152,12 +166,28 @@ class HasStroke(object):
 
 class TextContainer(object):
     @property
-    def text(self):
-        return self.item.text
+    def text_color(self):
+        return self.item.text.color()
 
-    @text.setter
-    def text(self, value):
-        self.item.text.set(value)
+    @text_color.setter
+    def text_color(self, value):
+        self.item.text.color.set(value)
+
+    @property
+    def text_font(self):
+        return self.item.text.font()
+
+    @text_font.setter
+    def text_font(self, value):
+        self.item.text.font.set(value)
+
+    @property
+    def text_size(self):
+        return self.item.text.size()
+
+    @text_size.setter
+    def text_size(self, value):
+        self.item.text.size.set(value)
 
 
 class Document(Item):
@@ -191,7 +221,7 @@ class Row(Item):
     elements = ['Group', 'Graphic']  # TODO: what else?'?
 
 
-class Graphic(Item, HasStroke):  # Group', 'Line', 'Solid
+class Graphic(Item, HasStroke,TextContainer):  # Group', 'Line', 'Solid
     collection = 'graphics'
     elements = ['IncomingLine', 'Line', 'OutgoingLine']  # TODO: also contains "user data items', 'what is that?'"
 

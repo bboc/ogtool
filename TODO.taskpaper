@@ -1,7 +1,7 @@
 Known Bugs:
 	- Item.walk() does not find all elements, e.g. ogtranslate does not find texts shared layers, most likely because of problems in pyappscript (see below)
-	- it seems that Item.walk() does access some elements several times, maybe that can be avoided? Needs more research about item-ids, naïve approach of just storing ids and object type did not reduce number of items visited. @done(2017-08-23)
 	- ogtranslate apparently does not translate line labels
+Notes on shared layers problem:
 	item.walk bugfix:
 		Observations:
 			Dumping texts from S3 Delegation Canvas (and S3 Org canvas):
@@ -37,12 +37,12 @@ Known Bugs:
 							MESSAGE: Can't get reference.
 							OFFENDING OBJECT: app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-list_nodes.graffle'].id
 							COMMAND: app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-list_nodes.graffle'].id.get()
-							
+					
 					Layers():
 					[app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[1], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'section titles'], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'title'], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'license'], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'version'], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'more-info']]
-				
+					
 					Graphics() in a shared layer:
-				
+					
 					[app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1047)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1045)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1043)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1040)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1039)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1037)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1035)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1033)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1032)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1029))]
 			Conclusion:
 				after eliminating bugs some small bugs and streamlining the code it appears that the problem is in the way appscript treats shared layers. Until that is fixed, it's best to avoid shared layers in any documents, or maybe write an apple script that converts shared layers to "real" layers.
@@ -57,3 +57,4 @@ Documentation:
 	- make a better readme, create separate files for each command?
 Features:
 	- replace colors in update_colors_and_fonts
+	- plugin: update_colors_and_fonts is unfinished

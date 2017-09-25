@@ -10,13 +10,12 @@ create collect.yaml:
 $ ogtool run-plugin combine_colors_and_fonts dummy.graffle --config=collect.yaml
 """
 
-
 import yaml
 
 from ogtools.colors import dump_colors_and_fonts_to_yaml_and_html, color_components
 
 
-def main(document, config, canvas=None, verbose=None):
+def main(document, config, canvas=None):
     fonts = dict(all=set())
     colors = set()
 

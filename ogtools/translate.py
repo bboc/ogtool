@@ -135,7 +135,6 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         OmniGraffleSandboxedTranslator.add_parser_extract(subparsers)
         OmniGraffleSandboxedTranslator.add_parser_list(subparsers)
         OmniGraffleSandboxedTranslator.add_parser_translate(subparsers)
-        parser.add_argument('--verbose', '-v', action='count')
         return parser
 
     @staticmethod
@@ -146,6 +145,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
                         help='an OmniGraffle file')
         sp.add_argument('--canvas', type=str,
                         help='translate canvas with given name')
+        OmniGraffleSandboxedTranslator.add_verbose(sp)
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_extract_translations)
 
     @staticmethod
@@ -154,6 +154,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
                                    help="List canvases in a file.")
         sp.add_argument('source', type=str,
                         help='an OmniGraffle file')
+        OmniGraffleSandboxedTranslator.add_verbose(sp)
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_list)
 
     @staticmethod
@@ -168,6 +169,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
                         help='name of po-file')
         sp.add_argument('--canvas', type=str,
                         help='translate canvas with given name')
+        OmniGraffleSandboxedTranslator.add_verbose(sp)
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_translate)
 
 

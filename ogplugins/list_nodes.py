@@ -14,7 +14,7 @@ import appscript
 from omnigraffle.data_model import Document
 
 
-def main(document, config, canvas=None, verbose=None):
+def main(document, config, canvas=None):
 
     def list_nodes(nodes, element):
         if element.text:
@@ -23,7 +23,7 @@ def main(document, config, canvas=None, verbose=None):
             element.item.id()
         except appscript.reference.CommandError:
             return  # some elements (e.g. Document) have no id
-        print element.item_info(), element.__class__
+        print element.info, element.__class__
         nodes['%s (%s)' % (element.item.id(), element.__class__)] += 1
         ids[element.item.id()] += 1
 
