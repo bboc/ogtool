@@ -25,9 +25,9 @@ def main(document, config, canvas=None):
         if config['fonts']:
             for f in config['fonts'].keys():
                 fonts['all'].add(f)
-        for c in config['colors'].keys():
-            colors.add(color_components(c))
-
+        if config['colors']:
+            for c in config['colors'].keys():
+                colors.add(color_components(c))
     result = {
         'fonts': sorted([f for f in fonts['all']]),
         'colors': sorted([c for c in colors]),

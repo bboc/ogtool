@@ -16,7 +16,10 @@ def hexcolors(color):
 
 
 def color_components(hexstring):
-    """Convert hexadecimal representation of color (e.g. '36FFcd')."""
+    """Convert hexadecimal representation of color (e.g. '36FFcd' or 'h3fdcc0')."""
+    if hexstring.startswith('h'):
+        hexstring = hexstring[1:]
+
     def component(c):
         return int(c, 16) * 256
     return (component(hexstring[0:2]), component(hexstring[2:4]), component(hexstring[4:6]))
@@ -50,7 +53,7 @@ YAML = Template(dedent("""
 """))
 
 COLORBOX = """<p><span style="background-color: #%(color)s">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> #%(color)s </p>\n"""
-YAML_COLOR = """    %(color)s: none"""
+YAML_COLOR = """    h%(color)s: none"""
 YAML_COLOR_HTML = """<span style="background-color: #%(color)s">&nbsp;&nbsp;&nbsp;&nbsp;- </span> c%(color)s: none"""
 
 YAML_FONT = """    %s: none"""
