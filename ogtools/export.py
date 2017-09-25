@@ -200,7 +200,7 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
         'border_amount',
         'draws_background',
         'export_scale',
-        #'html_image_type', TODO: html image type can't be None - find out when this happens and how to avoid
+        # 'html_image_type', TODO: html image type can't be None - find out when this happens and how to avoid
         'include_border',
         'origin',
         'resolution',
