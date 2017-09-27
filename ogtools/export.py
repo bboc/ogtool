@@ -28,7 +28,7 @@ File naming:
     * target filename has no extension: create folder if necessary, and export to "Canvas Name" in that folder
 
 2. Multipage File:
-    * target filename has proper format extencion: export to that filename (create dirs along the way)
+    * target filename has proper format extension: export to that filename (create dirs along the way)
     * target filename has no extension: create folder if necessary, and export to source.basename + extension in that folder
 
 3. Multi Canvas Export:
@@ -85,7 +85,16 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
             else:
                 return os.path.split(fn)
 
-        if self.args.format in self.MULTIPAGE_FORMATS:
+        if self.args.canvas:
+            # 2. Single Canvas: export to '<target> if filename, else to
+            # <target>/<canvas-name>.<format>'
+            directory, fname = _split_filename(target, self.args.format)
+            if not fname:
+                fname = "%s.%s" % (self.args.canvas, self.args.format)
+            self.export_canvas(
+                self.args.format, directory, fname, self.args.canvas)
+
+        elif self.args.format in self.MULTIPAGE_FORMATS:
             # 1. Multipart Format: export to '<target> if filename, else to
             # <target>/<source-filename>.<format>'
 
@@ -96,15 +105,6 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
                 fname = "%s.%s" % (
                     os.path.splitext(fname)[0], self.args.format)
             self.export_file(self.args.format, directory, fname)
-
-        elif self.args.canvas:
-            # 2. Single Canvas: export to '<target> if filename, else to
-            # <target>/<canvas-name>.<format>'
-            directory, fname = _split_filename(target, self.args.format)
-            if not fname:
-                fname = "%s.%s" % (self.args.canvas, self.args.format)
-            self.export_canvas(
-                self.args.format, directory, fname, self.args.canvas)
 
         elif len(self.doc.canvases()) == 1:
             # 3. Only one canvas in file: xport to
@@ -200,7 +200,7 @@ class OmniGraffleSandboxedExporter(OmniGraffleSandboxedCommand):
         'border_amount',
         'draws_background',
         'export_scale',
-        #'html_image_type', TODO: html image type can't be None - find out when this happens and how to avoid
+        # 'html_image_type', TODO: html image type can't be None - find out when this happens and how to avoid
         'include_border',
         'origin',
         'resolution',

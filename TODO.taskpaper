@@ -1,8 +1,60 @@
 Known Bugs:
-	- Item.walk() does not find all elements, e.g. ogtranslate does not find texts in pattern-group-headers.graffle
-	- it seems that Item.walk() does access some elements several times, maybe that can be avoided? Needs more research about item-ids, naïve approach of just storing ids and obnject type did not reduce number of items visited.
+	- Item.walk() does not find all elements, e.g. ogtranslate does not find texts shared layers, most likely because of problems in pyappscript (see below)
 	- ogtranslate apparently does not translate line labels
+Notes on shared layers problem:
+	item.walk bugfix:
+		Observations:
+			Dumping texts from S3 Delegation Canvas (and S3 Org canvas):
+				all section titles were missing from the text (shared layer)
+				each text from layer "box text" was duplicated (two canvases  had that layer, so we had each text 4 times)
+				more info, license and version layers were ignored entirely
+			Dumping texts from S3 Team Canvas:
+				first canvas:  all texts from header text, section titles, box text (in that order, then repeated)
+				second canvas: header text, section titles (again in that order, and repeated)
+				third canvas:  header text, section titles, box text, header text (all then repeated again)
+			Fiddling around with the debugger and data model:
+				some elements are not referenced properly, accessing id() or class() results in a appscript.reference.CommandError.
+					it appears that all these elements are  all in shared layers
+					Traceback (most recent call last):
+						File "/Users/beb/dev/.virtualenvs/omnigraffle-export/bin/ogtool", line 11, in <module>
+							load_entry_point('ogtool', 'console_scripts', 'ogtool')()
+						File "/Users/beb/dev/omnigraffle-export/ogtools/ogtool.py", line 218, in main
+							ogtool.args.func(ogtool)
+						File "/Users/beb/dev/omnigraffle-export/ogtools/ogtool.py", line 140, in cmd_run_plugin
+							plugin.main(self.doc, config, self.args.canvas, self.args.verbose)
+						File "/Users/beb/dev/omnigraffle-export/ogplugins/list_nodes.py", line 33, in main
+							d.walk(partial(list_nodes, nodes))
+						File "/Users/beb/dev/omnigraffle-export/omnigraffle/data_model.py", line 50, in walk
+							debug('::::', self.item_info())
+						File "/Users/beb/dev/omnigraffle-export/omnigraffle/data_model.py", line 70, in item_info
+							return "(%s) %s == %s (%s...)" % (self.id, self.class_, self.name, self.text[:20])
+						File "/Users/beb/dev/omnigraffle-export/omnigraffle/data_model.py", line 95, in id
+							return self.item.id()
+						File "build/bdist.macosx-10.11-x86_64/egg/appscript/reference.py", line 642, in __call__
+						File "build/bdist.macosx-10.11-x86_64/egg/appscript/reference.py", line 498, in __call__
+					appscript.reference.CommandError: Command failed:
+							OSERROR: -1728
+							MESSAGE: Can't get reference.
+							OFFENDING OBJECT: app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-list_nodes.graffle'].id
+							COMMAND: app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-list_nodes.graffle'].id.get()
+					
+					Layers():
+					[app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[1], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'section titles'], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'title'], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'license'], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'version'], app(u'/Applications/images/OmniGraffle.app').documents[u's3-dg-test-debug.graffle'].canvases.ID(6).layers[u'more-info']]
+					
+					Graphics() in a shared layer:
+					
+					[app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1047)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1045)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1043)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1040)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1039)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1037)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1035)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1033)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1032)), app(u'/Applications/images/OmniGraffle.app').AS_newreference(app.elements('docu').byname(u's3-dg-test-debug.graffle').elements('\x00\x00\x00\x00').byid(10).elements('OGGr').byid(1029))]
+			Conclusion:
+				after eliminating bugs some small bugs and streamlining the code it appears that the problem is in the way appscript treats shared layers. Until that is fixed, it's best to avoid shared layers in any documents, or maybe write an apple script that converts shared layers to "real" layers.
+			Fixes:
+				- fix erroneous skipping of visible layers @done(2017-08-22)
+				- create a debug plugin that drops into debugger for each canvas @done(2017-08-23)
+				- fix command error for layers @done(2017-08-23)
+				- move layer to first position in canvas @done(2017-08-23)
+				- check if having only layers in canvas changes number of items and numbers of visits! @done(2017-08-23)
+				- skip duplicates when walking @done(2017-08-23)
 Documentation:
 	- make a better readme, create separate files for each command?
 Features:
 	- replace colors in update_colors_and_fonts
+	- plugin: update_colors_and_fonts is unfinished

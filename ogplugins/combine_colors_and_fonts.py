@@ -3,22 +3,19 @@ Combine yaml and html output from several runs of ogtool dump into.
 
 Usage:
 
-$ og-tool run-plugin example_plugin ./tests/color-test.graffle  ogplugins/example_plugin.yaml --canvas my-canvas -vvv
-
 create collect.yaml:
     ls -b *.yaml
     prefix each line with '- ' in sublime text
     remove crowding.yaml etc.
-$ ogtool run-plugin combine_colors_and_fonts dummy.graffle collect.yaml
+$ ogtool run-plugin combine_colors_and_fonts dummy.graffle --config=collect.yaml
 """
-
 
 import yaml
 
 from ogtools.colors import dump_colors_and_fonts_to_yaml_and_html, color_components
 
 
-def main(document, config, canvas=None, verbose=None):
+def main(document, config, canvas=None):
     fonts = dict(all=set())
     colors = set()
 
@@ -28,9 +25,9 @@ def main(document, config, canvas=None, verbose=None):
         if config['fonts']:
             for f in config['fonts'].keys():
                 fonts['all'].add(f)
-        for c in config['colors'].keys():
-            colors.add(color_components(c))
-
+        if config['colors']:
+            for c in config['colors'].keys():
+                colors.add(color_components(c))
     result = {
         'fonts': sorted([f for f in fonts['all']]),
         'colors': sorted([c for c in colors]),

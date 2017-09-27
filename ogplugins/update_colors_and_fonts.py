@@ -6,7 +6,7 @@ from functools import partial
 from omnigraffle.data_model import Document, TextContainer
 
 
-def main(document, config, canvas=None, verbose=None):
+def main(document, config, canvas=None):
     """
     Replace fonts as defined in config.yaml
 

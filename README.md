@@ -9,7 +9,6 @@ Included commands:
 - **ogexport**: exporting of OmniGraffle canvases to bmp, eps, gif, jpg, png, pdf, psd (Photoshop), tiff, vdx (Visio XML). Not yet supported: html, svg. OmniGraffle's export settings can be overridden, those settings can conveniently be stored in a settings file. 
 - **ogtranslate**: ogtranslate implements a full translation workflow for OmniGraffle files, extracting tests to gettext pot-files, and injecting translated texts from po-files into a separate copy of the OmniGraffle document
 for each language.
-
 - **ogtool** implements a plugins to inspect and manipulate OmniGraffle documents, with a simple way to traverse the element tree, and configuration in yaml files. Included are example plugins, e.g. for updating fonts and colors on a set of design documents.
 
 
@@ -158,13 +157,11 @@ Take a look at the example plugins _list_nodes_ and _combine_colors_and_fonts_ t
 
 ## Known Issues
 
-In some cases, not all nodes of a document are reached, most likely the data_model in `omnigraffle.data_model` is not entirely correct. I have identified a reasonably simple file that demonstrates this effect, so can be remedied as soon as I find the time.
+1. og-tools cannot access objects shared layers properly. It appears that this might be caused by py-appscript. Since py-appscript is unmaintained for quite a few years now, this issue will most likely not be fixed anytime soon. An effective workaround might be toggling the shared layers before and after processing, either manually, or maybe through AppleScript/JavsScript or even with py-appscript.
+2. ogtranslate currently does not tranlsate line labels, this will be fixed in a future updates.
+3. The test suite only covers omnigraffle_export and ogexport, and needs to be extended for ogtool and ogtranslate.
 
-ogtranslate currently does not tranlsate line labels, this will be fixed in a future updates.
-
-The test suite only covers omnigraffle_export and ogexport, and needs to be extended for ogtool and ogtranslate.
-
-Issues and todos are tracked in [TODO.taskpaper](TODO.taskpaper)
+TODOs, including other small issues and more notes are tracked in [TODO.taskpaper](TODO.taskpaper)
 
 ## Links
 
