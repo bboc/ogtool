@@ -1,5 +1,6 @@
 Known Bugs:
 	- Item.walk() does not find all elements, e.g. ogtranslate does not find texts shared layers, most likely because of problems in pyappscript (see below)
+		> "It doesn’t look like there’s a simple way to convert layers, no. But I suspect the solution is simply to access the graphics of the layers of the canvases, rather than accessing the graphics of the canvases. (At least, that’s how you’d solve it in straight AppleScript:<graphics of first canvas>  doesn’t include graphics from shared layers, but<graphics of layers of first canvas>  does.)"
 	- ogtranslate apparently does not translate line labels
 Notes on shared layers problem:
 	item.walk bugfix:
