@@ -53,7 +53,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
             if isinstance(element, TextContainer):
                 # add text to memory
                 location = "%s/%s" % (file_name, canvas_name)
-                translation_memory[element.item.text()].add(location)
+                translation_memory[element.text].add(location)
 
         file_name = os.path.basename(self.args.source)
         translation_memory = defaultdict(set)
