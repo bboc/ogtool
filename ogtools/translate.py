@@ -104,11 +104,16 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         self.open_copy_of_document(self.args.document, self.args.language)
 
         def inject_translations(tm, element):
-            if isinstance(element, TextContainer):
+            if isinstance(element, TextContainer):  # TODO: do we actually still need this??
                 # add text to element
-                key = element.item.text()
-                if key in tm:
-                    element.item.text.text.set(tm[key])
+                if element.text:  # element has more than zero length accessible text
+                    for idx in range(len(element.item.text.attribute_runs())):
+                        text = element.item.text.attribute_runs[idx].text()
+                        if text in tm:
+                            # print text, tm[text]
+                            element.item.text.attribute_runs[idx].text.set(tm[text])                            
+                            # import pdb;pdb.set_trace()
+
 
         for canvas in self.doc.canvases():
             c = Canvas(canvas)
