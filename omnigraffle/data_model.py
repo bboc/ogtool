@@ -221,7 +221,7 @@ class Row(Item):
     elements = ['Group', 'Graphic']  # TODO: what else?'?
 
 
-class Graphic(Item, HasStroke,TextContainer):  # Group', 'Line', 'Solid
+class Graphic(Item, HasStroke, TextContainer):  # Group', 'Line', 'Solid
     collection = 'graphics'
     elements = ['IncomingLine', 'Line', 'OutgoingLine']  # TODO: also contains "user data items', 'what is that?'"
 
