@@ -35,6 +35,9 @@ Do we need keys and template files?
     - copy templates and fill in translations template files
 """
 
+BLACK = (0,0,0)
+ALMOST_BLACK = (1,1,1)
+
 
 class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
     """Translator for OmniGraffle6"""
@@ -100,25 +103,45 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         """Inject translations from a po-file into an OmniGraffle document."""
 
         tm = self.read_translation_memory(self.args.po_file)
-        # operate on a copy!!
         self.open_copy_of_document(self.args.document, self.args.language)
 
-        def inject_translations(tm, element):
-            if isinstance(element, TextContainer):  # TODO: do we actually still need this??
-                # add text to element
-                if element.text:  # element has more than zero length accessible text
-                    for idx in range(len(element.item.text.attribute_runs())):
-                        text = element.item.text.attribute_runs[idx].text()
-                        if text in tm:
-                            # print text, tm[text]
-                            element.item.text.attribute_runs[idx].text.set(tm[text])                            
-                            # import pdb;pdb.set_trace()
+        def inject_translations_legacy(tm, element):
+            """
+            Translate attribute_runs of an element. This code loses all formatting,
+            but successfully set marks an element as modified.
+            """
+            if element.text:  # element has more than zero length accessible text
+                if element.text in tm:
+                    element.item.text.set(tm[element.text])
 
+        def inject_translations(tm, element):
+            """Translate attribute_runs of an element."""
+            if element.text:  # element has more than zero length accessible text
+                for idx in range(len(element.item.text.attribute_runs())):
+                    text = element.item.text.attribute_runs[idx].text()
+                    if text in tm:
+                        element.item.text.attribute_runs[idx].text.set(tm[text])
+                        toggle_dirty_bit_for_element(element)
+
+        def toggle_dirty_bit_for_element(element):
+            """
+            OmniGraffle 6 does not detect that a text run has changed, so we attempt
+            to notify it through another change (text color) to the parent element,
+            which is then instantly reverted.
+            """
+            original_color = element.item.text.color()
+            # make sure any color is toggled
+            if original_color == BLACK:
+                element.item.text.color.set(ALMOST_BLACK)
+            else:
+                element.item.text.color.set(BLACK)
+            # print element.item.class_(), element.text, self.doc.modified()
+            # revert the change again
+            element.item.text.color.set(original_color)
 
         for canvas in self.doc.canvases():
             c = Canvas(canvas)
             c.walk(partial(inject_translations, tm))
-
         self.og.windows.first().close()
 
     def read_translation_memory(self, filename):
