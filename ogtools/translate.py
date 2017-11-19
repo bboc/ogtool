@@ -52,11 +52,18 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         """
         self.open_document()
 
-        def extract_translations(file_name, canvas_name, translation_memory, element):
+        def extract_translations_legacy(file_name, canvas_name, translation_memory, element):
             if isinstance(element, TextContainer):
                 # add text to memory
                 location = "%s/%s" % (file_name, canvas_name)
                 translation_memory[element.text].add(location)
+
+        def extract_translations(file_name, canvas_name, translation_memory, element):
+            if element.text:  # element has more than zero length accessible text
+                for text in element.item.text.attribute_runs():
+                    if text.strip():  # add only text with non-whitespace memory
+                        location = "%s/%s" % (file_name, canvas_name)
+                        translation_memory[text].add(location)
 
         file_name = os.path.basename(self.args.source)
         translation_memory = defaultdict(set)
