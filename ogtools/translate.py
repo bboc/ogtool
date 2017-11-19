@@ -35,8 +35,8 @@ Do we need keys and template files?
     - copy templates and fill in translations template files
 """
 
-BLACK = (0,0,0)
-ALMOST_BLACK = (1,1,1)
+BLACK = (0, 0, 0)
+ALMOST_BLACK = (1, 1, 1)
 
 
 class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
