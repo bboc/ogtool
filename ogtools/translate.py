@@ -4,9 +4,10 @@ import argparse
 from collections import defaultdict
 from functools import partial
 import os
-
+from textwrap import dedent
 import polib
 
+import appscript
 from omnigraffle.command import OmniGraffleSandboxedCommand
 from omnigraffle.data_model import Canvas, TextContainer
 
@@ -107,10 +108,34 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         self.og.windows.first().close()
 
     def cmd_translate(self):
-        """Inject translations from a po-file into an OmniGraffle document."""
+        """
+        Inject translations from a po-files into  OmniGraffle documents.
 
-        tm = self.read_translation_memory(self.args.po_file)
-        self.open_copy_of_document(self.args.document, self.args.language)
+        If any of the parameters is a directory, actual filenames will be
+        inferred from source file, if source is a directory, all OmniGraffle
+        documents in that folder will be processed.
+        """
+
+        if not os.path.exists(self.args.source):
+            print "source does not exist", self.args.source
+
+        if os.path.isdir(self.args.source):
+            for filename in sorted(os.listdir(self.args.source)):
+                if filename.endswith(".graffle"):
+                    self.translate_document(os.path.join(self.args.source, filename),
+                                            self.args.target,
+                                            self.args.translations)
+        else:
+            self.translate_document(self.args.source, self.args.target, self.args.translations)
+
+    def translate_document(self, source, target, translations):
+        """Translate one document."""
+        self.open_copy_of_document(source, target=target)
+        if os.path.isdir(translations):
+            tm_file = os.path.join(translations, os.path.splitext(os.path.basename(source))[0] + '.po')
+        else:
+            tm_file = translations
+        tm = self.read_translation_memory(tm_file)
 
         def inject_translations_legacy(tm, element):
             """
@@ -195,15 +220,31 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
     @staticmethod
     def add_parser_translate(subparsers):
         sp = subparsers.add_parser('translate',
-                                   help="Translate an Omnigraffle document with strings from a po file.")
-        sp.add_argument('document', type=str,
-                        help='an OmniGraffle file')
-        sp.add_argument('language', type=str,
-                        help='two-digit language identifier')
-        sp.add_argument('po_file', type=str,
-                        help='name of po-file')
-        sp.add_argument('--canvas', type=str,
-                        help='translate canvas with given name')
+                                   description=dedent("""Translate an Omnigraffle document(s) using po-files.
+
+                                        If any of the parameters is a directory, actual filenames will be
+                                        inferred from source file, if source is a directory, all OmniGraffle
+                                        documents in that folder will be processed.
+                                        Example:
+
+                                           ogtranslate translate graffle/src/ graffle/de/ text/de/
+
+                                        will create translated copies from each document found in graffle/src
+                                        in graffle/de, using a separate po-file for each document, located
+                                        in graffle/de.
+
+                                            ogtranslate translate graffle/src/ graffle/de/ text/de/all.po
+
+                                        will create translated copies from each document found in graffle/src
+                                        in graffle/de, using text/de/all.po for translating each document."""))
+        sp.add_argument('source', type=str,
+                        help='an OmniGraffle document or a folder')
+        sp.add_argument('target', type=str,
+                        help='target filename or folder')
+        sp.add_argument('translations', type=str,
+                        help='a po-file or a folder')
+        # sp.add_argument('language', type=str,
+        #                 help='two-digit language identifier')
         OmniGraffleSandboxedTranslator.add_verbose(sp)
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_translate)
 
