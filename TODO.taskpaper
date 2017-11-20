@@ -4,9 +4,12 @@ Features:
 	Translations:
 		✔ build translations: extract text from attribute runs, not from text!!! @done (17-11-19 19:25)
 		- infer name of PO-file from source file if not specified
+		- translate full folder if specified
+		- refactor open copy of document to target and source filename
 Known Bugs:
 	- Item.walk() does not find all elements, e.g. ogtranslate does not find texts shared layers, most likely because of problems in pyappscript (see below)
 		> "It doesn’t look like there’s a simple way to convert layers, no. But I suspect the solution is simply to access the graphics of the layers of the canvases, rather than accessing the graphics of the canvases. (At least, that’s how you’d solve it in straight AppleScript:<graphics of first canvas>  doesn’t include graphics from shared layers, but<graphics of layers of first canvas>  does.)"
+	- Item.walk() does not process groups and/or subgraphs
 	- ogtranslate apparently does not translate line labels
 Notes on shared layers problem:
 	item.walk bugfix:
