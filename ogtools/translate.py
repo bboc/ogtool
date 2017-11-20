@@ -25,7 +25,7 @@ Translation of Omnigrafle files
     - walk through all objects, if text: replace with translated text
     - save
 
-TODO: how to make sure OmniGraffle files are not changed between exporting pot and tranlsation?
+TODO: how to make sure OmniGraffle files are not changed between exporting pot and translation?
     Create dedicated image repo (needs branchens for each resource release) or add to the repo
      where illustrations are used (adds lots of duplication)
 
