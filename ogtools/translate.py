@@ -152,8 +152,11 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
                 for idx in range(len(element.item.text.attribute_runs())):
                     text = element.item.text.attribute_runs[idx].text()
                     if text in tm:
-                        element.item.text.attribute_runs[idx].text.set(tm[text])
-                        toggle_dirty_bit_for_element(element)
+                        try:
+                            element.item.text.attribute_runs[idx].text.set(tm[text])
+                            toggle_dirty_bit_for_element(element)
+                        except appscript.reference.CommandError:
+                            print "ERROR: unable to replace", text, tm[text]
 
         def toggle_dirty_bit_for_element(element):
             """
