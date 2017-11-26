@@ -152,7 +152,10 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
                 for idx in range(len(element.item.text.attribute_runs())):
                     text = element.item.text.attribute_runs[idx].text()
                     if text in tm:
+                        # import pdb; pdb.set_trace()
+                        # print self.doc.modified()
                         try:
+                            # print text, tm[text]
                             element.item.text.attribute_runs[idx].text.set(tm[text])
                             toggle_dirty_bit_for_element(element)
                         except appscript.reference.CommandError:
@@ -166,6 +169,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
             """
             original_color = element.item.text.color()
             # make sure any color is toggled
+            # print original_color
             if original_color == BLACK:
                 element.item.text.color.set(ALMOST_BLACK)
             else:
@@ -177,6 +181,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         for canvas in self.doc.canvases():
             c = Canvas(canvas)
             c.walk(partial(inject_translations, tm))
+        # import pdb;pdb.set_trace()
         self.og.windows.first().close()
 
     def read_translation_memory(self, filename):
