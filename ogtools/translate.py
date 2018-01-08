@@ -2,14 +2,16 @@
 
 import argparse
 from collections import defaultdict
+from datetime import datetime
 from functools import partial
+import logging
 import os
 from textwrap import dedent
 import polib
 
 import appscript
 from omnigraffle.command import OmniGraffleSandboxedCommand
-from omnigraffle.data_model import Canvas, TextContainer
+from omnigraffle.data_model import Canvas
 
 """
 Translation of Omnigrafle files
@@ -36,10 +38,6 @@ Do we need keys and template files?
     - copy templates and fill in translations template files
 """
 
-BLACK = (0, 0, 0)
-ALMOST_BLACK = (1, 1, 1)
-
-
 class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
     """Translator for OmniGraffle6"""
 
@@ -54,7 +52,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         self.open_document()
 
         def extract_translations_legacy(file_name, canvas_name, translation_memory, element):
-            if isinstance(element, TextContainer):
+            if element.text:
                 # add text to memory
                 location = "%s/%s" % (file_name, canvas_name)
                 translation_memory[element.text].add(location)
@@ -117,7 +115,8 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         """
 
         if not os.path.exists(self.args.source):
-            print "source does not exist", self.args.source
+            logging.error("source '%s' does not exist", self.args.source)
+            return
 
         if os.path.isdir(self.args.source):
             for filename in sorted(os.listdir(self.args.source)):
@@ -129,7 +128,7 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
             self.translate_document(self.args.source, self.args.target, self.args.translations)
 
     def translate_document(self, source, target, translations):
-        """Translate one document."""
+        """Create a copy of and then translate one OmniGraffle document."""
         self.open_copy_of_document(source, target=target)
         if os.path.isdir(translations):
             tm_file = os.path.join(translations, os.path.splitext(os.path.basename(source))[0] + '.po')
@@ -148,40 +147,38 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
 
         def inject_translations(tm, element):
             """Translate attribute_runs of an element."""
+            # import pdb; pdb.set_trace()
+
             if element.text:  # element has more than zero length accessible text
                 for idx in range(len(element.item.text.attribute_runs())):
                     text = element.item.text.attribute_runs[idx].text()
+                    logging.debug("found text: '%s'", text)
                     if text in tm:
                         # import pdb; pdb.set_trace()
-                        # print self.doc.modified()
                         try:
-                            # print text, tm[text]
+                            logging.info("translate text: '%s' -> '%s' (modified: %s)", text, tm[text], self.doc.modified())
                             element.item.text.attribute_runs[idx].text.set(tm[text])
                             toggle_dirty_bit_for_element(element)
                         except appscript.reference.CommandError:
-                            print "ERROR: unable to replace", text, tm[text]
+                            logging.error("unable to replace '%s' with '%s' in %s", text, tm[text], element.info)
 
         def toggle_dirty_bit_for_element(element):
             """
-            OmniGraffle 6 does not detect that a text run has changed, so we attempt
-            to notify it through another change (text color) to the parent element,
-            which is then instantly reverted.
+            As changing an text in an attribute run does not trigger a document save, the element containg
+            the text gets an updated timestamp in it's user data container. Now changes are saved correctly.
             """
-            original_color = element.item.text.color()
-            # make sure any color is toggled
-            # print original_color
-            if original_color == BLACK:
-                element.item.text.color.set(ALMOST_BLACK)
-            else:
-                element.item.text.color.set(BLACK)
-            # print element.item.class_(), element.text, self.doc.modified()
-            # revert the change again
-            element.item.text.color.set(original_color)
+            data = element.item.user_data()
+            data = data or {}
+            data['upd_timestamp'] = str(datetime.now())
+            element.item.user_data.set(data)
+            if not self.doc.modified():
+                logging.error("document is not marked as modified")
 
         for canvas in self.doc.canvases():
             c = Canvas(canvas)
             c.walk(partial(inject_translations, tm))
-        # import pdb;pdb.set_trace()
+
+        self.og.windows.first().save()
         self.og.windows.first().close()
 
     def read_translation_memory(self, filename):
