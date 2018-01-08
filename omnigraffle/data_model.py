@@ -3,7 +3,6 @@
 The OmniGraffle document data model, for traversing all elements in the
 document, e,g, to extract or inject text.
 """
-from __future__ import print_function
 
 from functools import partial
 import logging
