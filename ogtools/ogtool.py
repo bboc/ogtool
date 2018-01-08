@@ -139,7 +139,8 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
             sys.exit(1)
 
         plugin.main(self.doc, config, self.args.canvas)
-
+    
+        self.og.windows.first().save()
         self.og.windows.first().close()
 
     def cmd_list_plugins(self):
