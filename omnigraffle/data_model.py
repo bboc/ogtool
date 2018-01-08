@@ -45,6 +45,10 @@ class Item(object):
                 return
             else:
                 nodes_visited.add(self.item.id())
+        except TypeError: 
+            # sometimes this is unhashable, e.g. type: 'list'
+            # TODO: when?
+            pass # import pdb;pdb.set_trace()
         except appscript.reference.CommandError:
             pass  # items without id cannot be tracked
 
