@@ -22,6 +22,10 @@ class Item(object):
     May be Named and/or a TextContainer.
     """
     # children = []
+    # add all possible classes to children so none are missed
+    children = ['Column', 'Graphic', 'Group', 'IncomingLine', 'Label', 'Line', 'OutgoingLine',
+                'Row', 'Shape', 'Solid', 'Subgraph']
+
     _current_canvas_name = ''
 
     def __init__(self, item):
@@ -200,40 +204,39 @@ class Document(Item):
 
 class Canvas(Item, Named):
     collection_name = 'canvases'
-    children = ['Layer', 'Subgraph', 'Group', 'Line', 'Shape', 'Solid', 'Graphic']
-    # children = ['Layer'] # TODO: are all objects in layers?
+    # children = ['Layer', 'Subgraph', 'Group', 'Line', 'Shape', 'Solid', 'Graphic']
+    children = ['Layer']
 
 
 class Layer(Item):
     collection_name = 'layers'
-    children = ['Subgraph', 'Group', 'Line', 'Shape', 'Solid', 'Graphic']
+    # children = ['Subgraph', 'Group', 'Line', 'Shape', 'Solid', 'Graphic']
 
 
 class TableSlice(Item):
     """A row or column of a table."""
     collection_name = 'table_slices'
-    children = ['Group']  # TODO: what else?'?
+    # children = ['Group']  # TODO: what else?'?
 
 
 class Column(Item):
     collection_name = 'columns'
-    children = ['Group']  # TODO: what else?'?
+    # children = ['Group']  # TODO: what else?'?
 
 
 class Row(Item):
     collection_name = 'rows'
-    children = ['Group', 'Graphic']  # TODO: what else?'?
+    # children = ['Group', 'Graphic']  # TODO: what else?'?
 
 
 class Graphic(Item, HasStroke, TextContainer):  # Group', 'Line', 'Solid
     collection_name = 'graphics'
-    children = ['IncomingLine', 'OutgoingLine', 'Line']  # TODO: also contains "user data items', 'what is that?'"
+    # children = ['IncomingLine', 'OutgoingLine', 'Line']  # TODO: also contains "user data items', 'what is that?'"
 
 
 class Group(Graphic):
     collection_name = 'groups'
-    # TODO: graphics might be enough to enumerate, subgraphs and tables are also groups
-    children = ['Subgraph', 'Group', 'Shape', 'Solid', 'Graphic']
+    # children = ['Subgraph', 'Group', 'Shape', 'Solid', 'Graphic']
 
 
 class IncomingLine(Graphic):
@@ -242,7 +245,7 @@ class IncomingLine(Graphic):
 
 class Line(Graphic):
     collection_name = 'lines'
-    children = ['Label']
+    # children = ['Label']
 
 
 class OutgoingLine(Graphic):
@@ -263,9 +266,9 @@ class Label(Shape, Named):
 
 class Subgraph(Group):
     collection_name = 'subgraphs'
-    children = ['Group', 'Shape', 'Solid', 'Subgraph', 'Graphic']
+    # children = ['Group', 'Shape', 'Solid', 'Subgraph', 'Graphic']
 
 
 class Table(Group):
     collection_name = 'tables'
-    children = ['Column', 'Row']
+    # children = ['Column', 'Row']
