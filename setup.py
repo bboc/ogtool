@@ -1,18 +1,17 @@
 import os
 from setuptools import setup, find_packages
-from pkg_resources import resource_filename
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-setup (
+setup(
     name="ogtool",
-    version="0.5.1",
+    version="0.5.2",
     packages=find_packages(exclude='tests'),
-    install_requires=['appscript','pyobjc', 'polib', 'pyyaml'],
-    author="Bernhard Bockelbrink",
+    install_requires=['appscript', 'pyobjc', 'polib', 'pyyaml'],
+    author="Bernhard Bockelbrink, Filip Krikava (export code)",
     author_email="bernhard.bockelbrink@gmail.com",
     description="A set of commandline tools for OmniGraffle 6+, for export, translation, replacement of fonts and colors etc. Comes with a plugin API to that allows for simple manipulation of items in OmniGraffle documents.",
     long_description=read("README.md"),
@@ -28,7 +27,7 @@ setup (
         "Programming Language :: Python :: 2.7",
         "Topic :: Utilities"
     ],
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'omnigraffle-export = omnigraffle_export.omnigraffle_export:main',
             'ogexport = ogtools.export:main',
@@ -36,6 +35,6 @@ setup (
             'ogtool = ogtools.ogtool:main',
         ],
     },
-    test_suite = 'tests',
-    zip_safe = True,
+    test_suite='tests',
+    zip_safe=True,
 )
