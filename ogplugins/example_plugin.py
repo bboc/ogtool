@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 Example plugin for ogtools, lists document canvases and contents of config file.
 

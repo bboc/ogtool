@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 Example plugin for ogtools: print a list of all nodes in a document.
 

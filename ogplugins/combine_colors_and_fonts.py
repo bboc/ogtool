@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 Combine yaml and html output from several runs of ogtool dump into.
 
