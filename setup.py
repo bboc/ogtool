@@ -17,7 +17,7 @@ setup(
     long_description=read("README.md"),
     license="http://www.opensource.org/licenses/mit-license.php",
     keywords="omnigraffle export gettext i18n command",
-    url="https://github.com/fikovnik/omnigraffle-export",
+    url="https://github.com/bboc/ogtool",
     # http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Development Status :: 3 - Alpha",
