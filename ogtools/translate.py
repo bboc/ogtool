@@ -156,12 +156,14 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
                     logging.debug("found text: '%s'", text)
                     if text in tm:
                         # import pdb; pdb.set_trace()
-                        try:
-                            logging.info("translate text: '%s' -> '%s' (modified: %s)", text, tm[text], self.doc.modified())
-                            element.item.text.attribute_runs[idx].text.set(tm[text])
-                            toggle_dirty_bit_for_element(element)
-                        except appscript.reference.CommandError:
-                            logging.error("unable to replace '%s' with '%s' in %s", text, tm[text], element.info)
+                        element.item.text.attribute_runs[idx].text.set(tm[text])
+                        toggle_dirty_bit_for_element(element)
+                        # try:
+                        #     logging.info("translate text: '%s' -> '%s' (modified: %s)", text, tm[text], self.doc.modified())
+                        #     element.item.text.attribute_runs[idx].text.set(tm[text])
+                        #     toggle_dirty_bit_for_element(element)
+                        # except appscript.reference.CommandError:
+                        #     logging.error("unable to replace '%s' with '%s' in %s", text, tm[text], element.info)
 
         def toggle_dirty_bit_for_element(element):
             """
