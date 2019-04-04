@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 Example plugin for ogtools: drop into debugger in each canvas
 

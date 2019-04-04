@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
 
 import argparse
@@ -93,7 +95,7 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
 
         logging.info(repr(replacements))
         # operate on a copy!!
-        self.open_copy_of_document(self.args.document, 'replaced')
+        self.open_copy_of_document(self.args.document, suffix='replaced')
 
         def replace(replacements, element):
             if not isinstance(element, Document):
@@ -129,7 +131,7 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
             config = yaml.load(stream)
 
         # operate on a copy!!
-        self.open_copy_of_document(self.args.document, self.args.plugin)
+        self.open_copy_of_document(self.args.document, suffix=self.args.plugin)
         plugin = importlib.import_module("ogplugins.%s" % self.args.plugin, package='ogplugins')
         try:
             plugin = importlib.import_module("ogplugins.%s" % self.args.plugin, package='ogplugins')
@@ -139,7 +141,8 @@ class OmniGraffleSandboxedTools(OmniGraffleSandboxedCommand):
             sys.exit(1)
 
         plugin.main(self.doc, config, self.args.canvas)
-
+    
+        self.og.windows.first().save()
         self.og.windows.first().close()
 
     def cmd_list_plugins(self):

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """Various helpers to deal with colors and fonts."""
 
 from collections import defaultdict

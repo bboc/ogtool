@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 The OmniGraffle document data model, for traversing all elements in the
 document, e,g, to extract or inject text.
 """
-from __future__ import print_function
 
 from functools import partial
 import logging
@@ -21,7 +21,11 @@ class Item(object):
 
     May be Named and/or a TextContainer.
     """
-    elements = []
+    # children = []
+    # add all possible classes to children so none are missed
+    children = ['Column', 'Graphic', 'Group', 'IncomingLine', 'Label', 'Line', 'OutgoingLine',
+                'Row', 'Shape', 'Solid', 'Subgraph']
+
     _current_canvas_name = ''
 
     def __init__(self, item):
@@ -30,7 +34,7 @@ class Item(object):
     def walk(self, callback, skip_invisible_layers=False, nodes_visited=None, level=0):
         """
         Traverse the a document tree and invoke callback on each element.
-        # TODO: apparently some elements are visited more than once, others are never visited
+        # TODO: apparently some items are visited more than once, others are never visited
         """
         debug = partial(globals()['debug'], level)
 
@@ -42,8 +46,12 @@ class Item(object):
                 return
             else:
                 nodes_visited.add(self.item.id())
+        except TypeError: 
+            # sometimes this is unhashable, e.g. type: 'list'
+            # TODO: when?
+            pass # import pdb;pdb.set_trace()
         except appscript.reference.CommandError:
-            pass  # elements without id cannot be tracked
+            pass  # items without id cannot be tracked
 
         if isinstance(self, Canvas):
             debug("\n\n-----------------Canvas: '%s'-----------------\n" % self.item.name())
@@ -56,24 +64,28 @@ class Item(object):
 
         debug('::::', self.info)
 
+        # import pdb; pdb.set_trace()
+
         callback(self)
 
-        for class_name in self.elements:
-            klass = globals()[class_name]
-            collection = getattr(self.item, klass.collection)
+        for child_class in self.children:
+            debug('child class', child_class)
+            klass = globals()[child_class]
+            collection = getattr(self.item, klass.collection_name)
             try:
                 collection()
             except appscript.reference.CommandError:
+                debug("\n...skipped collection", child_class)
                 # apparently there's a problem with some collections, e.g. 'IncomingLine' in Graphics
                 continue
             try:
-                length = len(collection())
-            except TypeError:  # the length of some collections cannot be determined
-                debug("+--- processing collection", class_name, "elements: (not available)")
+                size = len(collection())
+            except TypeError:  # the size of some collections cannot be determined
+                debug("+--- processing collection", child_class, "size: (not available)")
             else:
-                debug("+--- processing collection", class_name, "elements: %s" % length)
+                debug("+--- processing collection", child_class, "size: %s" % size)
                 for idx, item in enumerate(collection()):
-                    debug("   ", class_name, "# %s" % idx)
+                    debug("   ", child_class, "# %s" % idx)
                     i = klass(item)
                     i.walk(callback, skip_invisible_layers, nodes_visited, level + 1)
 
@@ -191,77 +203,76 @@ class TextContainer(object):
 
 
 class Document(Item):
-    elements = ['Canvas']
+    children = ['Canvas']
 
 
 class Canvas(Item, Named):
-    collection = 'canvases'
-    elements = ['Layer', 'Graphic', 'Group', 'Line', 'Shape', 'Solid', 'Subgraph']
-    # elements = ['Layer'] # TODO: are all objects in layers?
+    collection_name = 'canvases'
+    # children = ['Layer', 'Subgraph', 'Group', 'Line', 'Shape', 'Solid', 'Graphic']
+    children = ['Layer']
 
 
 class Layer(Item):
-    collection = 'layers'
-    elements = ['Graphic', 'Group', 'Line', 'Shape', 'Solid', 'Subgraph']
+    collection_name = 'layers'
+    # children = ['Subgraph', 'Group', 'Line', 'Shape', 'Solid', 'Graphic']
 
 
 class TableSlice(Item):
     """A row or column of a table."""
-    collection = 'table_slices'
-    elements = ['Group']  # TODO: what else?'?
+    collection_name = 'table_slices'
+    # children = ['Group']  # TODO: what else?'?
 
 
 class Column(Item):
-    collection = 'columns'
-    elements = ['Group']  # TODO: what else?'?
+    collection_name = 'columns'
+    # children = ['Group']  # TODO: what else?'?
 
 
 class Row(Item):
-    collection = 'rows'
-    elements = ['Group', 'Graphic']  # TODO: what else?'?
+    collection_name = 'rows'
+    # children = ['Group', 'Graphic']  # TODO: what else?'?
 
 
-class Graphic(Item, HasStroke,TextContainer):  # Group', 'Line', 'Solid
-    collection = 'graphics'
-    elements = ['IncomingLine', 'Line', 'OutgoingLine']  # TODO: also contains "user data items', 'what is that?'"
+class Graphic(Item, HasStroke, TextContainer):  # Group', 'Line', 'Solid
+    collection_name = 'graphics'
+    # children = ['IncomingLine', 'OutgoingLine', 'Line']  # TODO: also contains "user data items', 'what is that?'"
 
 
 class Group(Graphic):
-    collection = 'groups'
-    # TODO: graphics might be enough to enumerate, subgraphs and tables are also groups
-    elements = ['Graphic', 'Group', 'Shape', 'Solid', 'Subgraph']
+    collection_name = 'groups'
+    # children = ['Subgraph', 'Group', 'Shape', 'Solid', 'Graphic']
 
 
 class IncomingLine(Graphic):
-    collection = 'incoming_lines'
+    collection_name = 'incoming_lines'
 
 
 class Line(Graphic):
-    collection = 'lines'
-    elements = ['Label']
+    collection_name = 'lines'
+    # children = ['Label']
 
 
 class OutgoingLine(Graphic):
-    collection = 'outgoing_lines'
+    collection_name = 'outgoing_lines'
 
 
 class Solid(Graphic, Filled, TextContainer):  # Polygon', 'Shape
-    collection = 'solids'
+    collection_name = 'solids'
 
 
 class Shape(Solid, Named):
-    collection = 'shapes'
+    collection_name = 'shapes'
 
 
 class Label(Shape, Named):
-    collection = 'labels'
+    collection_name = 'labels'
 
 
 class Subgraph(Group):
-    collection = 'subgraphs'
-    elements = ['Graphic', 'Group', 'Shape', 'Solid', 'Subgraph']
+    collection_name = 'subgraphs'
+    # children = ['Group', 'Shape', 'Solid', 'Subgraph', 'Graphic']
 
 
 class Table(Group):
-    collection = 'tables'
-    elements = ['Column', 'Row']
+    collection_name = 'tables'
+    # children = ['Column', 'Row']

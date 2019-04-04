@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import logging
 import os
@@ -75,12 +76,30 @@ class OmniGraffleSandboxedCommand(object):
 
         logging.debug('Opened OmniGraffle file: ' + fname)
 
-    def open_copy_of_document(self, filename, suffix):
+    def open_copy_of_document_(self, filename, suffix):
         """create and open a copy of an omnigraffle document."""
         root, ext = os.path.splitext(filename)
         doc_copy = root + '-' + suffix + ext
         shutil.copyfile(filename, doc_copy)
         self.open_document(doc_copy)
+
+    def open_copy_of_document(self, source, target=None, suffix=None):
+        """
+        Create and open a copy of an omnigraffle document.
+        Target takes precedence over sufix, if target is given and is a directory, the target
+        file name will be created from target and the basename of source. If target is ommited,
+        but suffix is given, the target filename will be created by extending source with suffix.
+        """
+        if target:
+            if os.path.isdir(target):
+                # create full target file name from basenam of source file
+                target = os.path.join(target, os.path.basename(source))
+        if suffix and not target:
+            root, ext = os.path.splitext(source)
+            target = root + '-' + suffix + ext
+        print "copy:", source, target
+        shutil.copyfile(source, target)
+        self.open_document(target)
 
     def parse_commandline(self):
         """Parse commandline, do some checks and return args."""

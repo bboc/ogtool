@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 Update colors and fonts in a document (and adapt font size).
 """

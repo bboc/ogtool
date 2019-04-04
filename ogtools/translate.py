@@ -1,14 +1,18 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import argparse
 from collections import defaultdict
+from datetime import datetime
 from functools import partial
+import logging
 import os
-
+from textwrap import dedent
 import polib
 
+import appscript
 from omnigraffle.command import OmniGraffleSandboxedCommand
-from omnigraffle.data_model import Canvas, TextContainer
+from omnigraffle.data_model import Canvas
 
 """
 Translation of Omnigrafle files
@@ -24,7 +28,7 @@ Translation of Omnigrafle files
     - walk through all objects, if text: replace with translated text
     - save
 
-TODO: how to make sure OmniGraffle files are not changed between exporting pot and tranlsation?
+TODO: how to make sure OmniGraffle files are not changed between exporting pot and translation?
     Create dedicated image repo (needs branchens for each resource release) or add to the repo
      where illustrations are used (adds lots of duplication)
 
@@ -34,7 +38,6 @@ Do we need keys and template files?
     - create a omnigraffle template file where texts are replaced by hashes
     - copy templates and fill in translations template files
 """
-
 
 class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
     """Translator for OmniGraffle6"""
@@ -49,11 +52,18 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         """
         self.open_document()
 
-        def extract_translations(file_name, canvas_name, translation_memory, element):
-            if isinstance(element, TextContainer):
+        def extract_translations_legacy(file_name, canvas_name, translation_memory, element):
+            if element.text:
                 # add text to memory
                 location = "%s/%s" % (file_name, canvas_name)
-                translation_memory[element.item.text()].add(location)
+                translation_memory[element.text].add(location)
+
+        def extract_translations(file_name, canvas_name, translation_memory, element):
+            if element.text:  # element has more than zero length accessible text
+                for text in element.item.text.attribute_runs():
+                    if text.strip():  # add only text with non-whitespace memory
+                        location = "%s/%s" % (file_name, canvas_name)
+                        translation_memory[text].add(location)
 
         file_name = os.path.basename(self.args.source)
         translation_memory = defaultdict(set)
@@ -97,23 +107,81 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
         self.og.windows.first().close()
 
     def cmd_translate(self):
-        """Inject translations from a po-file into an OmniGraffle document."""
+        """
+        Inject translations from a po-files into  OmniGraffle documents.
 
-        tm = self.read_translation_memory(self.args.po_file)
-        # operate on a copy!!
-        self.open_copy_of_document(self.args.document, self.args.language)
+        If any of the parameters is a directory, actual filenames will be
+        inferred from source file, if source is a directory, all OmniGraffle
+        documents in that folder will be processed.
+        """
+
+        if not os.path.exists(self.args.source):
+            logging.error("source '%s' does not exist", self.args.source)
+            return
+
+        if os.path.isdir(self.args.source):
+            for filename in sorted(os.listdir(self.args.source)):
+                if filename.endswith(".graffle"):
+                    self.translate_document(os.path.join(self.args.source, filename),
+                                            self.args.target,
+                                            self.args.translations)
+        else:
+            self.translate_document(self.args.source, self.args.target, self.args.translations)
+
+    def translate_document(self, source, target, translations):
+        """Create a copy of and then translate one OmniGraffle document."""
+        self.open_copy_of_document(source, target=target)
+        if os.path.isdir(translations):
+            tm_file = os.path.join(translations, os.path.splitext(os.path.basename(source))[0] + '.po')
+        else:
+            tm_file = translations
+        tm = self.read_translation_memory(tm_file)
+
+        def inject_translations_legacy(tm, element):
+            """
+            Translate attribute_runs of an element. This code loses all formatting,
+            but successfully set marks an element as modified.
+            """
+            if element.text:  # element has more than zero length accessible text
+                if element.text in tm:
+                    element.item.text.set(tm[element.text])
 
         def inject_translations(tm, element):
-            if isinstance(element, TextContainer):
-                # add text to element
-                key = element.item.text()
-                if key in tm:
-                    element.item.text.text.set(tm[key])
+            """Translate attribute_runs of an element."""
+            # import pdb; pdb.set_trace()
+
+            if element.text:  # element has more than zero length accessible text
+                for idx in range(len(element.item.text.attribute_runs())):
+                    text = element.item.text.attribute_runs[idx].text()
+                    logging.debug("found text: '%s'", text)
+                    if text in tm:
+                        # import pdb; pdb.set_trace()
+                        element.item.text.attribute_runs[idx].text.set(tm[text])
+                        toggle_dirty_bit_for_element(element)
+                        # try:
+                        #     logging.info("translate text: '%s' -> '%s' (modified: %s)", text, tm[text], self.doc.modified())
+                        #     element.item.text.attribute_runs[idx].text.set(tm[text])
+                        #     toggle_dirty_bit_for_element(element)
+                        # except appscript.reference.CommandError:
+                        #     logging.error("unable to replace '%s' with '%s' in %s", text, tm[text], element.info)
+
+        def toggle_dirty_bit_for_element(element):
+            """
+            As changing an text in an attribute run does not trigger a document save, the element containg
+            the text gets an updated timestamp in it's user data container. Now changes are saved correctly.
+            """
+            data = element.item.user_data()
+            data = data or {}
+            data['upd_timestamp'] = str(datetime.now())
+            element.item.user_data.set(data)
+            if not self.doc.modified():
+                logging.error("document is not marked as modified")
 
         for canvas in self.doc.canvases():
             c = Canvas(canvas)
             c.walk(partial(inject_translations, tm))
 
+        self.og.windows.first().save()
         self.og.windows.first().close()
 
     def read_translation_memory(self, filename):
@@ -160,15 +228,31 @@ class OmniGraffleSandboxedTranslator(OmniGraffleSandboxedCommand):
     @staticmethod
     def add_parser_translate(subparsers):
         sp = subparsers.add_parser('translate',
-                                   help="Translate an Omnigraffle document with strings from a po file.")
-        sp.add_argument('document', type=str,
-                        help='an OmniGraffle file')
-        sp.add_argument('language', type=str,
-                        help='two-digit language identifier')
-        sp.add_argument('po_file', type=str,
-                        help='name of po-file')
-        sp.add_argument('--canvas', type=str,
-                        help='translate canvas with given name')
+                                   description=dedent("""Translate an Omnigraffle document(s) using po-files.
+
+                                        If any of the parameters is a directory, actual filenames will be
+                                        inferred from source file, if source is a directory, all OmniGraffle
+                                        documents in that folder will be processed.
+                                        Example:
+
+                                           ogtranslate translate graffle/src/ graffle/de/ text/de/
+
+                                        will create translated copies from each document found in graffle/src
+                                        in graffle/de, using a separate po-file for each document, located
+                                        in graffle/de.
+
+                                            ogtranslate translate graffle/src/ graffle/de/ text/de/all.po
+
+                                        will create translated copies from each document found in graffle/src
+                                        in graffle/de, using text/de/all.po for translating each document."""))
+        sp.add_argument('source', type=str,
+                        help='an OmniGraffle document or a folder')
+        sp.add_argument('target', type=str,
+                        help='target filename or folder')
+        sp.add_argument('translations', type=str,
+                        help='a po-file or a folder')
+        # sp.add_argument('language', type=str,
+        #                 help='two-digit language identifier')
         OmniGraffleSandboxedTranslator.add_verbose(sp)
         sp.set_defaults(func=OmniGraffleSandboxedTranslator.cmd_translate)
 

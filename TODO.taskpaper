@@ -1,5 +1,18 @@
+Features:
+	- replace colors in update_colors_and_fonts
+	- plugin: update_colors_and_fonts is unfinished
+	Translations:
+		✔ build translations: extract text from attribute runs, not from text!!! @done (17-11-19 19:25)
+		✔ infer name of PO-file from source file if not specified @done (17-11-20 13:48)
+		✔ translate full folder if specified @done (17-11-20 13:48)
+		✔ refactor open copy of document to target and source filename @done (17-11-20 13:48)
+Refactorings:
+		- try py-applescript instead of py-appscript: https://pypi.org/project/py-applescript/
+		- refactor data model (and Item.walk()) so that it tries all possible child elements with each element). That may lead to even more elements being properly accessed. the ID cache should prevent the script from taking too long.
 Known Bugs:
 	- Item.walk() does not find all elements, e.g. ogtranslate does not find texts shared layers, most likely because of problems in pyappscript (see below)
+		> "It doesn’t look like there’s a simple way to convert layers, no. But I suspect the solution is simply to access the graphics of the layers of the canvases, rather than accessing the graphics of the canvases. (At least, that’s how you’d solve it in straight AppleScript:<graphics of first canvas>  doesn’t include graphics from shared layers, but<graphics of layers of first canvas>  does.)"
+	✔ Item.walk() does not process groups and/or subgraphs @done (17-11-20 13:48)
 	- ogtranslate apparently does not translate line labels
 Notes on shared layers problem:
 	item.walk bugfix:
@@ -55,6 +68,3 @@ Notes on shared layers problem:
 				- skip duplicates when walking @done(2017-08-23)
 Documentation:
 	- make a better readme, create separate files for each command?
-Features:
-	- replace colors in update_colors_and_fonts
-	- plugin: update_colors_and_fonts is unfinished
