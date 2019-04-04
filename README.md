@@ -1,15 +1,16 @@
 # OmniGraffle Tool (ogtool)
 
 
-A set of commandline tools for [OmniGraffle 6+](http://www.omnigroup.com/products/omnigraffle/), for export, translation, replacement of fonts and colors etc. Comes with a plugin API to that allows for simple manipulation of items in OmniGraffle documents.
+A set of command-line tools for [OmniGraffle 6+](http://www.omnigroup.com/products/omnigraffle/), for export, translation, replacement of fonts and colors etc. Comes with a plugin API to that allows for simple manipulation of items in OmniGraffle documents.
 
+There is a port of _ogtool_ to JXA, which is a [work in progress](https://github.com/bboc/omnigraffle-tools/).
 
 Included commands:
 
-- **ogexport**: exporting of OmniGraffle canvases to bmp, eps, gif, jpg, png, pdf, psd (Photoshop), tiff, vdx (Visio XML). Not yet supported: html, svg. OmniGraffle's export settings can be overridden, those settings can conveniently be stored in a settings file. 
-- **ogtranslate**: ogtranslate implements a full translation workflow for OmniGraffle files, extracting tests to gettext pot-files, and injecting translated texts from po-files into a separate copy of the OmniGraffle document
+- **ogexport**: exporting of OmniGraffle canvases to bmp, eps, gif, jpg, png, pdf, psd (Photoshop), tiff, vdx (Visio XML). Not yet supported: html, SVG. OmniGraffle's export settings can be overridden, those settings can conveniently be stored in a settings file. 
+- **ogtranslate**: ogtranslate implements a full translation workflow for OmniGraffle files, extracting tests to gettext pot-files, and injecting translated texts from PO-files into a separate copy of the OmniGraffle document
 for each language.
-- **ogtool** implements a plugins to inspect and manipulate OmniGraffle documents, with a simple way to traverse the element tree, and configuration in yaml files. Included are example plugins, e.g. for updating fonts and colors on a set of design documents.
+- **ogtool** implements a plugins to inspect and manipulate OmniGraffle documents, with a simple way to traverse the element tree, and configuration in YAML files. Included are example plugins, e.g. for updating fonts and colors on a set of design documents.
 
 
 This software is based on [omnigraffle_export](https://github.com/fikovnik/omnigraffle-export) created and maintained by [Filip Krikava](https://github.com/fikovnik). omnigraffle_export is still included in this repository, as it contains some features ogtool does not (and probably will never) support, see the [documentation for omnigraffle_export](ommigraffle_export.md) for more details.
@@ -32,10 +33,9 @@ or
     $ make install
 
 
-
 ## Usage: ogexport
 
-Commandline tool for exporting OmniGraffle 6 files to (almost) all supported file formats (html and svg currently disabled). Supports export of one specific canvas, or all canvases in a file. 
+Command-line tool for exporting OmniGraffle 6 files to (almost) all supported file formats (HMTL and SVG currently disabled). Supports export of one specific canvas, or all canvases in a file. 
 
 Scale, resolution and transparency can be set via optional parameters.
     
@@ -62,7 +62,7 @@ Scale, resolution and transparency can be set via optional parameters.
       --transparent         export with transparent background
       --verbose, -v
    
-If a file fails, simply try again. Export uses current export settingsstored in OmniGraffle for each filetype, except for those explicity overridden through arguments. Overridden export settings are restored to previous values in OmniGraffle after export. Arguments can be read from a file, filename needs to be prefixed with @ on the commandline. In config files, use one argument per line (e.g. --resolution=1.0).
+If a file fails, simply try again. Export uses current export settings stored in OmniGraffle for each filetype, except for those explicitly overridden through arguments. Overridden export settings are restored to previous values in OmniGraffle after export. Arguments can be read from a file, filename needs to be prefixed with @ on the command-line. In config files, use one argument per line (e.g. --resolution=1.0).
 
 ### Example
 
@@ -149,7 +149,7 @@ ogtools requires an OmniGraffle document to run, and will automatically create a
 
 ## Plugins for ogtool
 
-Plugins a are pyton module in the folder `ogplugins`. The first line of the module's docstring is the description output by `ogtool list`, the name of the file is the name of the plugin as required by `ogtool run-plugin`. 
+Plugins a are Python modules in the folder `ogplugins`. The first line of the module's docstring is the description output by `ogtool list`, the name of the file is the name of the plugin as required by `ogtool run-plugin`. 
 
 Each plugin must implement a method `main(document, config, canvas=None, verbose=None)`, ogtool automatically creates a copy of the OmniGraffle document and hands in the copy as parameter document. The config is read from a yaml file and handed in a s a python data structure. 
 
@@ -157,10 +157,11 @@ Take a look at the example plugins _list_nodes_ and _combine_colors_and_fonts_ t
 
 ## Known Issues
 
-1. og-tools cannot access objects shared layers properly. It appears that this might be caused by py-appscript. Since py-appscript is unmaintained for quite a few years now, this issue will most likely not be fixed anytime soon. An effective workaround might be toggling the shared layers before and after processing, either manually, or maybe through AppleScript/JavsScript or even with py-appscript.
-2. ogtranslate currently does not tranlsate line labels, this will be fixed in a future updates.
-3. The test suite only covers omnigraffle_export and ogexport, and needs to be extended for ogtool and ogtranslate.
-4. replacing text in attribute runs does not result in the document being marked as updated, so injected tranlsations are not saved. The code contains a workaround - adding a timestamp to key 'upd_timestamp' in user data of the element containing the text - so that the element with replaced text is marked as updated. This problem is at least present in OmniGraffle 6.6.2 and can be observed through watching document.modified(). This does not only affect attribute runs, I was also observe it when changing colors, user_names and font size. According to the OmniGraffle developers this behaviour has not changes version 7. 
+1. **og-tools cannot access objects shared layers properly**. It appeared that this might be caused by py-appscript. Since py-appscript is unmaintained for quite a few years now, this issue will most likely not be fixed anytime soon. An effective workaround might be toggling the shared layers before and after processing, either manually, or maybe through AppleScript/JavsScript or even with py-appscript. **It appears now that this issue is still present when accessing OmniGraffle through JXA**
+2. **ogtranslate currently does not translate line labels.** I will address this in a later version
+3. **ogtools test suite is incomplete** The test suite only covers omnigraffle_export and ogexport, and needs to be extended for ogtool and ogtranslate. _I need to figure an elegant way to write tests for my JXA code._
+4. **replacing text in attribute runs does not result in the document being marked as updated**, so injected tranlsations are not saved. The code contains a workaround - adding a timestamp to key 'upd_timestamp' in user data of the element containing the text - so that the element with replaced text is marked as updated. This problem is at least present in OmniGraffle 6.6.2 and can be observed through watching document.modified(). This does not only affect attribute runs, I also observed this when changing colors, user_names and font size. According to the OmniGraffle developers this behaviour has not changed in version 7. 
+5. **py-appscript is no longer maintained** Maybe [py-applescript](https://pypi.org/project/py-applescript/) is a way forward, because the last commit is about a year old.
 
 TODOs, including other small issues and more notes are tracked in [TODO.taskpaper](TODO.taskpaper)
 
